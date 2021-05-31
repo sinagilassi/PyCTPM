@@ -2,12 +2,16 @@
 Peng-Robinson (PR) equation of state
 """
 
+from core import constants
+
 
 # main
 
 
 def main():
     print("PR EOS")
+    print(constants.R_CONST)
+
     return _eosPR(1)
 
 # PR EOS
