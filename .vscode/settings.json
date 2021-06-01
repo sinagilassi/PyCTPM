@@ -3,5 +3,5 @@
         "ctpm"
     ],
     "python.pythonPath": "venv\\Scripts\\python.exe",
-    "python.analysis.extraPaths": ["ctpm", "ctpm/"]
+    "python.analysis.extraPaths": ["ctpm"]
 }

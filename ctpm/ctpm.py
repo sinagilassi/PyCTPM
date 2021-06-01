@@ -13,6 +13,7 @@ Chemical Thermodynamics for Process Modeling
 """
 
 x = 2
+y = 1
 
 
 def main():

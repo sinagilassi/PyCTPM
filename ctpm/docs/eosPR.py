@@ -8,6 +8,9 @@ from core import constants
 # main
 
 
+x = constants.R_CONST
+
+
 def main():
     print("PR EOS")
     print(constants.R_CONST)
@@ -23,9 +26,11 @@ def _eosPR(x):
     Args:
         x ([type]): [description]
     """
-    print("PR result is: {}".format(x))
 
-    return x*100
+    y = x * constants.R_CONST
+    print("PR result is: {}".format(y))
+
+    return y*100
 
 
 #
