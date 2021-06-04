@@ -1,35 +1,49 @@
+# Chemical Thermodynamics for Process Modeling
+# ----------------------------------------------
 
-import docs.eosPR as myFun
+# import packages/modules
+import docs
+import json
+import os
 
-
-# from ctpm.ctpm import
-
-import numpy as np
-
-# from docs.eosPR import _eosPR
-
-"""
-Chemical Thermodynamics for Process Modeling
-"""
-
-x = 2
-y = 1
+# main
 
 
 def main():
-    y = np.array([1, 2, 3])
-    print(y)
-    res = eosPR_import()
-    # res = 10
-    print("ctpm package is running!, res: {}".format(res))
+    print("Chemical Thermodynamics for Process Modeling")
+
+# eos init
+
+
+def eosExe(modelInput):
+    print(f"modelInput {modelInput}")
+    # eos method
+    eosNameSet = modelInput['eos']
+    # model input
+    pressureSet = modelInput['pressure']
+    temperatureSet = modelInput['temperature']
+    componentsSet = modelInput['components']
+
+    # select method
+    selectEOS = {
+        "PR": lambda P, T, components: docs._eosPR(P, T, components)
+    }
+
+    # return
+    return selectEOS.get(eosNameSet)(pressureSet, temperatureSet, componentsSet)
+
+
+#! test json
+def showJson():
+    appPath = "database\component.json"
+    print(appPath)
+    with open(appPath) as f:
+        data = json.load(f)
+        print(data)
+    #  lookup
+    res = data["payload"]
+    print(res)
     return res
-
-
-def eosPR_import():
-    return myFun._eosPR(2)
-    # return eosPR._eosPR(2)
-    print("eosPR_import")
-    # return 10
 
 
 if __name__ == "__main__":

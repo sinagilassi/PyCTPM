@@ -1,1 +1,2 @@
-# from core import constants
+#
+from .eosCore import _eosPR
