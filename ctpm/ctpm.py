@@ -1,5 +1,5 @@
-# Chemical Thermodynamics for Process Modeling
-# ----------------------------------------------
+# Chemical Thermodynamics for Process Modeling in Python (CTPMPy)
+# ---------------------------------------------------------------
 
 # import packages/modules
 import docs
@@ -13,10 +13,17 @@ import core.constants as CONST
 def main():
     print("Chemical Thermodynamics for Process Modeling")
 
-# eos init
-
 
 def eosExe(modelInput):
+    """
+    eos init
+
+    Args:
+        modelInput ([type]): model input data
+
+    Returns:
+        [type]: [description]
+    """
     # print(f"modelInput {modelInput}")
     # eos method
     eosNameSet = modelInput['eos']
@@ -28,10 +35,12 @@ def eosExe(modelInput):
     print(f"temperatureSet: {temperatureSet}")
     componentsSet = modelInput['components']
     print(f"componentsSet: {componentsSet}")
+    moleFractionSet = modelInput['moleFraction']
+    print(f"moleFractionSet: {moleFractionSet}")
 
     # * init eos class
     _eosCoreClass = docs.eosCoreClass(
-        pressureSet, temperatureSet, componentsSet, eosNameSet)
+        pressureSet, temperatureSet, componentsSet, eosNameSet, moleFractionSet)
     # select method
     selectEOS = {
         "PR": lambda: _eosCoreClass._eosPR()

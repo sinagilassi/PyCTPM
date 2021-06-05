@@ -1,6 +1,8 @@
 {
     "cSpell.words": [
-        "ctpm"
+        "Rootf",
+        "ctpm",
+        "scipy"
     ],
     "python.pythonPath": "venv\\Scripts\\python.exe",
     "python.analysis.extraPaths": ["ctpm"]
