@@ -4,6 +4,10 @@
 # Redlich-Kwong and Soave
 # Peng-Robinson
 
+# import packages/modules
+import core.constants as CONST
+
+
 class eosClass:
     # init
     def __init__(self, eosName) -> None:
@@ -18,9 +22,9 @@ class eosClass:
 
         # select eos
         switchDic = {
-            "van-der-waals": lambda B: -1 - B,
-            "redlich-kwong-soave": lambda B: -1,
-            "peng-robinson": lambda B: -1 + B,
+            "VDW": lambda B: -1 - B,
+            "SKR": lambda B: -1,
+            "PR": lambda B: -1 + B,
         }
 
         # res

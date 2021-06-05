@@ -1,2 +1,2 @@
 #
-from .eosCore import _eosPR
+from .eosCore import eosCoreClass

@@ -5,11 +5,9 @@ import core.constants as CONST
 
 # input
 # argon
-Argon = {
-    "Tc": 150.9,  # K
-    "Pc": 4.898,  # MPa
-    "w": -0.004  # -
-}
+components = [
+    "Ar", "CO"
+]
 
 # operating conditions
 # temperature (K)
@@ -19,10 +17,10 @@ P = 0.496
 
 # model input
 modelInput = {
-    "eos": "PR",
+    "eos": CONST.PENG_ROBINSON,
     "pressure": P,
     "temperature": T,
-    "components": [Argon]
+    "components": components
 }
 
 # single component estimation

@@ -9,12 +9,9 @@ import json
 
 class storeData:
     #! init
-    def __init__(self) -> None:
-        """ load json data """
-        # * rest
-        self.data = dict()
+    def __init__(self):
         # * set
-        self.initData(self)
+        self.data = self.initData()
 
     #! init json data
     def initData(self):
@@ -25,11 +22,13 @@ class storeData:
             # database file
             appPath = "database\component.json"
             with open(appPath) as f:
-                payload = json.load(f)
-                self.data = payload.copy()
+                data = json.load(f)
+                payload = data['payload'].copy()
+                return payload
         except NameError:
             print(NameError)
-            self.data.clear()
+
+    # end fun
 
     #! get data
     def getData(self):

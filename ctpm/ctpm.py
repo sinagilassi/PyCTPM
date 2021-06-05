@@ -5,6 +5,7 @@
 import docs
 import json
 import os
+import core.constants as CONST
 
 # main
 
@@ -16,21 +17,28 @@ def main():
 
 
 def eosExe(modelInput):
-    print(f"modelInput {modelInput}")
+    # print(f"modelInput {modelInput}")
     # eos method
     eosNameSet = modelInput['eos']
+    print(f"eosNameSet: {eosNameSet}")
     # model input
     pressureSet = modelInput['pressure']
+    print(f"pressureSet: {pressureSet}")
     temperatureSet = modelInput['temperature']
+    print(f"temperatureSet: {temperatureSet}")
     componentsSet = modelInput['components']
+    print(f"componentsSet: {componentsSet}")
 
+    # * init eos class
+    _eosCoreClass = docs.eosCoreClass(
+        pressureSet, temperatureSet, componentsSet, eosNameSet)
     # select method
     selectEOS = {
-        "PR": lambda P, T, components: docs._eosPR(P, T, components)
+        "PR": lambda: _eosCoreClass._eosPR()
     }
 
     # return
-    return selectEOS.get(eosNameSet)(pressureSet, temperatureSet, componentsSet)
+    return selectEOS.get(eosNameSet)()
 
 
 #! test json
