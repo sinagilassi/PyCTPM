@@ -3,7 +3,6 @@
 
 # import packages/modules
 import numpy as np
-from scipy.optimize.minpack import fsolve
 import math
 import core.constants as CONST
 from docs.eos import eosClass
@@ -68,8 +67,11 @@ class eosCoreClass(eosClass):
         # check pure, multi-component system
         if componentsNo > 1:
             # mixing rule to calculate a/b
-            aSet = a
-            bSet = b
+            # kij
+            kij = self.kijFill()
+            aij = self.aijFill(a, kij)
+            aSet = self.aMixing(aij, self.moleFraction)
+            bSet = self.bMixing(b, self.moleFraction)
         else:
             # no change a/b
             aSet = a[0]
@@ -91,12 +93,30 @@ class eosCoreClass(eosClass):
 
         # find f(Z) root
         rootList = self.findRootfZ(alpha, beta, gamma)
+        print(f"rootList: {rootList}")
 
-        return rootList
+        # z
+        minZ = np.amin(rootList)
+        maxZ = np.amax(rootList)
+
+        # molar volume [cm3/gmol]
+        # -> liquid
+        molarVolumeLiquid = self.molarVolume(minZ)
+        print(f"molarVolumeLiquid {molarVolumeLiquid}")
+        # -> gas
+        molarVolumeGas = self.molarVolume(maxZ)
+        print(f"molarVolumeGas {molarVolumeGas}")
+
+        # molar volume fraction
+        molarVolume = {
+            "gas": self.sortRootfZ(molarVolumeGas*np.array(self.moleFraction)),
+            "liquid": self.sortRootfZ(molarVolumeLiquid*np.array(self.moleFraction))
+        }
+
+        return molarVolume
 
     # a
     def pengRobinson_a(self, Pc, Tc, w) -> float:
-        print(Pc, Tc, w)
         k = 0.37464 + 1.54226 * w - 0.26993 * math.pow(w, 2)
         alpha = math.pow(1 + k * (1 - math.sqrt(self.T / Tc)), 2)
         ac = (0.45723553 * (math.pow(CONST.R_CONST, 2) * math.pow(Tc, 2))) / Pc
@@ -105,7 +125,8 @@ class eosCoreClass(eosClass):
 
     # b
     def pengRobinson_b(self, Pc, Tc) -> float:
-        return (0.07779607 * CONST.R_CONST * Tc) / Pc
+        res = (0.07779607 * CONST.R_CONST * Tc) / Pc
+        return res
 
 
 # main

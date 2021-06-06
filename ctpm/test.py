@@ -44,12 +44,25 @@ x0 = [1]
 # plt.plot(x, ft)
 
 # zGuess = np.linspace(0, 2, 11)
-zGuess = np.array([0.015, 0.235, 0.112])
-z2 = 10.54875
-print(zGuess)
-z = roundNum(z2, 2)
-print(z)
+# zGuess = np.array([0.015, 0.235, 0.112])
+# z2 = 10.54875
+# print(zGuess)
+# z = roundNum(z2, 2)
+# print(z)
 
-z0 = [1, 2, 2, 3]
-z01 = removeDuplicatesList(z0)
-print(z01)
+# z0 = [1, 2, 2, 3]
+# z01 = removeDuplicatesList(z0)
+# print(z01)
+
+
+# square matrix
+matrixShape = (2)
+kijMatrix = np.zeros(matrixShape)
+print(kijMatrix)
+
+# matrix
+# e = np.array([[1, 2, -8], [-1, -5, 10]])
+# e1 = e[np.where((e > 0) & (e < 4))]
+# print(e1, e)
+# e1[1] = 100
+# print(e1, e)

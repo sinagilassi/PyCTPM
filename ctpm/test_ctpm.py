@@ -6,16 +6,17 @@ import core.constants as CONST
 # input
 # argon
 components = [
-    "Ar"
+    "Ar", "CO2"
 ]
 
-xi = [1]
+xi = [0.5, 0.5]
 
 # operating conditions
 # temperature (K)
 T = 105.6
 # pressure (MPa)
 P = 0.496
+# molar volume (cm3/gmol)
 
 # model input
 modelInput = {

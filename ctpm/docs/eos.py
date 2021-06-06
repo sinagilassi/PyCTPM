@@ -19,6 +19,11 @@ class eosClass:
         self.eosName = eosName
         self.moleFraction = moleFraction
 
+    # component no
+    def componentNoSet(self):
+        return len(self.moleFraction)
+
+    #
     def eos_A(self, a):
         # A value
         # var
@@ -62,6 +67,7 @@ class eosClass:
         # return
         return res
 
+    # !
     def eos_beta(self, A, B):
         """ calculate parameter beta """
         # var
@@ -110,9 +116,6 @@ class eosClass:
     def findRootfZ(self, alpha, beta, gamma):
         # vars
         data = (alpha, beta, gamma)
-        # components number
-        componentsNo = len(self.components)
-        x0 = np.zeros(componentsNo)
         #
         zList = []
         zGuess = np.linspace(0, 1, 11)
@@ -120,11 +123,17 @@ class eosClass:
             zLoop = fsolve(self.fZ, [item], args=data)
             zList.append(zLoop[0])
 
+        # list -> array
+        zListArray = np.array(zList)
+        # limit between 0,1
+        zListLimit = zListArray[np.where(
+            (zListArray >= 0.0) & (zListArray <= 1.0))]
+        # print(f"zListLimit: {zListLimit}")
         # round z
-        zListRound = self.sortRootfZ(zList)
+        zListRound = self.sortRootfZ(zListLimit)
         # print(f"zListRound: {zListRound}")
         #  remove duplicate items
-        zListNet = removeDuplicatesList(zListRound)
+        zListNet = np.array(removeDuplicatesList(zListRound))
         # print(f"zListNet: {zListNet}")
         # return
         return zListNet
@@ -133,3 +142,69 @@ class eosClass:
     def sortRootfZ(self, data):
         zList = roundNum(data, 4)
         return zList
+
+    # k[i,j]
+    def kijFill(self):
+        """ interaction parameter should be taken from experimental data, otherwise have to set to zero! """
+        # components number
+        componentsNo = self.componentNoSet()
+        print(f"componentsNo {componentsNo}")
+        # square matrix
+        matrixShape = (componentsNo, componentsNo)
+        kijMatrix = np.zeros(matrixShape)
+        # set
+        for i in range(componentsNo):
+            for j in range(componentsNo):
+                if i == j:
+                    kijMatrix[i, j] = 0.0
+                else:
+                    kijMatrix[i, j] = 0.0
+        # res
+        return kijMatrix
+
+    # a[i,j]
+    def aijFill(self, ai, kij):
+        # components number
+        componentsNo = self.componentNoSet()
+        # square matrix
+        matrixShape = (componentsNo, componentsNo)
+        aijMatrix = np.zeros(matrixShape)
+        # set
+        for i in range(componentsNo):
+            for j in range(componentsNo):
+                aijMatrix[i, j] = (1-kij[i, j])*np.sqrt(ai[i]*ai[j])
+        # res
+        return aijMatrix
+
+    # mixing rule b
+    def bMixing(self, bi, xi):
+        # components number
+        componentsNo = self.componentNoSet()
+        # square matrix
+        matrixShape = (componentsNo)
+        bMatrix = np.zeros(matrixShape)
+        # set
+        for i in range(componentsNo):
+            bMatrix[i] = xi[i]*bi[i]
+        # sum
+        res = np.sum(bMatrix)
+        return res
+
+    # mixing rule a
+    def aMixing(self, aij, xi):
+        # components number
+        componentsNo = self.componentNoSet()
+        # square matrix
+        matrixShape = (componentsNo, componentsNo)
+        aMatrix = np.zeros(matrixShape)
+        # set
+        for i in range(componentsNo):
+            for j in range(componentsNo):
+                aMatrix[i, j] = xi[i]*xi[j]*aij[i, j]
+        # sum
+        res = np.sum(aMatrix)
+        return res
+
+    # molar volume [cm3/gmol]
+    def molarVolume(self, Z):
+        return Z * ((CONST.R_CONST * self.T) / self.P)
