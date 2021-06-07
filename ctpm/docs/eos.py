@@ -9,6 +9,7 @@ import numpy as np
 from scipy.optimize import fsolve
 import core.constants as CONST
 from core.utilities import roundNum, removeDuplicatesList
+from core.config import EOS_ROOT_ACCURACY
 
 
 class eosClass:
@@ -140,12 +141,14 @@ class eosClass:
 
     # net fZ root
     def sortRootfZ(self, data):
-        zList = roundNum(data, 4)
+        zList = roundNum(data, EOS_ROOT_ACCURACY)
         return zList
 
     # k[i,j]
     def kijFill(self):
-        """ interaction parameter should be taken from experimental data, otherwise have to set to zero! """
+        """ 
+            interaction parameter should be taken from experimental data, otherwise have to set to zero! 
+        """
         # components number
         componentsNo = self.componentNoSet()
         print(f"componentsNo {componentsNo}")

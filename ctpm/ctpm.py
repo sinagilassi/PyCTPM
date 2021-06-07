@@ -11,18 +11,15 @@ import core.constants as CONST
 
 
 def main():
+    """ 
+        Chemical Thermodynamics for Process Modeling in Python
+    """
     print("Chemical Thermodynamics for Process Modeling")
 
 
 def eosExe(modelInput):
     """
-    eos init
-
-    Args:
-        modelInput ([type]): model input data
-
-    Returns:
-        [type]: [description]
+        eos init
     """
     # print(f"modelInput {modelInput}")
     # eos method

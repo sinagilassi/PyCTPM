@@ -45,10 +45,12 @@ x0 = [1]
 
 # zGuess = np.linspace(0, 2, 11)
 # zGuess = np.array([0.015, 0.235, 0.112])
-# z2 = 10.54875
 # print(zGuess)
-# z = roundNum(z2, 2)
-# print(z)
+
+z2 = 10.54875
+z = roundNum(z2, 2)
+z2 = roundNum(z2)
+print(z, z2)
 
 # z0 = [1, 2, 2, 3]
 # z01 = removeDuplicatesList(z0)
@@ -56,9 +58,9 @@ x0 = [1]
 
 
 # square matrix
-matrixShape = (2)
-kijMatrix = np.zeros(matrixShape)
-print(kijMatrix)
+# matrixShape = (2)
+# kijMatrix = np.zeros(matrixShape)
+# print(kijMatrix)
 
 # matrix
 # e = np.array([[1, 2, -8], [-1, -5, 10]])

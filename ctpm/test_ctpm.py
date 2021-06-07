@@ -1,6 +1,6 @@
 # test
 import unittest
-from ctpm import eosExe, showJson
+from ctpm import eosExe, showJson, main
 import core.constants as CONST
 
 # input
@@ -28,8 +28,10 @@ modelInput = {
 }
 
 # single component estimation
-res = eosExe(modelInput)
-msg = "PR eos result {res}"
-print(msg.format(res=res))
+# res = eosExe(modelInput)
+# msg = "PR eos result {res}"
+# print(msg.format(res=res))
 
 # showJson()
+
+print(main().__doc__)
