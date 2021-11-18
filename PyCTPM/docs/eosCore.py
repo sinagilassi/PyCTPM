@@ -4,9 +4,10 @@
 # import packages/modules
 import numpy as np
 import math
-import core.constants as CONST
-from docs.eos import eosClass
-from docs.eosData import dbClass
+# internals
+import PyCTPM.core.constants as CONST
+from PyCTPM.docs.eos import eosClass
+from PyCTPM.docs.eosData import dbClass
 
 # eos methods
 

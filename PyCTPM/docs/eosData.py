@@ -3,7 +3,8 @@
 
 # import packages/modules
 import json
-from core.store import storeData
+# internals
+from PyCTPM.core.store import storeData
 
 #
 

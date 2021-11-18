@@ -7,9 +7,10 @@
 # import packages/modules
 import numpy as np
 from scipy.optimize import fsolve
-import core.constants as CONST
-from core.utilities import roundNum, removeDuplicatesList
-from core.config import EOS_ROOT_ACCURACY
+# internals
+import PyCTPM.core.constants as CONST
+from PyCTPM.core.utilities import roundNum, removeDuplicatesList
+from PyCTPM.core.config import EOS_ROOT_ACCURACY
 
 
 class eosClass:

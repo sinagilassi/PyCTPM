@@ -1,20 +1,40 @@
-# Chemical Thermodynamics for Process Modeling in Python (CTPMPy)
-# ---------------------------------------------------------------
+# Python Chemical Thermodynamics for Process Modeling
+# ----------------------------------------------------
 
 # import packages/modules
-import docs
 import json
 import os
-import core.constants as CONST
+# internals
+import PyCTPM.core.constants as CONST
+from PyCTPM.core import packageName
+from PyCTPM.docs import ExtCoreClass, eosCoreClass
 
 # main
 
 
 def main():
     """ 
-        Chemical Thermodynamics for Process Modeling in Python
+    Python Chemical Thermodynamics for Process Modeling
     """
-    print("Chemical Thermodynamics for Process Modeling")
+    print(packageName)
+
+
+def thermo(propName, compList, modelInput, unit="SI"):
+    '''
+    estimate thermodynamic properties
+    args:
+        propName: property name
+        compList: component list
+        modelInput: model input such as pressure, temperature
+        unit: set unit (SI, cgs)
+    '''
+    # try/except
+    try:
+        # get primary info
+        ExtCoreClassSet = ExtCoreClass(propName, compList, modelInput, unit)
+        return ExtCoreClassSet.propSet()
+    except Exception as e:
+        raise
 
 
 def eosExe(modelInput):
@@ -36,7 +56,7 @@ def eosExe(modelInput):
     print(f"moleFractionSet: {moleFractionSet}")
 
     # * init eos class
-    _eosCoreClass = docs.eosCoreClass(
+    _eosCoreClass = eosCoreClass(
         pressureSet, temperatureSet, componentsSet, eosNameSet, moleFractionSet)
     # select method
     selectEOS = {

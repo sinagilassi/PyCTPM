@@ -1,2 +1,0 @@
-#
-from .eosCore import eosCoreClass
