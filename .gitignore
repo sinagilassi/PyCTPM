@@ -23,6 +23,7 @@ chrome-profiler-events*.json
 *.launch
 .settings/
 *.sublime-workspace
+**/__pycache__
 
 # IDE - VSCode
 .vscode/*
@@ -45,3 +46,7 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# python
+ctpm.egg-info/*
+build/*
