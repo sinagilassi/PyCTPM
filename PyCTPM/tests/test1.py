@@ -3,13 +3,23 @@
 
 # import package/module
 import PyCTPM
-from PyCTPM import thermo
+from PyCTPM import thermo, comp
 
 # version
 print("PyCTPM version: ", PyCTPM.__version__)
 # description
 print("PyCTPM description: ", PyCTPM.__description__)
 
+# component available
+print(comp())
 #
-res = thermo("molecular-weight", 2, 3)
-print("res: ", res)
+# components
+compList = ["CO2, CO, H2O"]
+#
+
+modelInput = {
+    "components": compList
+}
+
+# res = thermo("molecular-weight", 2, 3)
+# print("res: ", res)

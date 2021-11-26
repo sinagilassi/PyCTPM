@@ -3,6 +3,8 @@
 
 # package name
 packageName = 'Python Chemical Thermodynamics for Process Modeling'
+# package short name
+packageShortName = 'PyCTPM'
 # package version
 __version__ = '1.0.0'
 # package description
