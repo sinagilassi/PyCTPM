@@ -6,10 +6,8 @@ import json
 import os
 # internals
 import PyCTPM.core.constants as CONST
-from PyCTPM.core import packageName
-from PyCTPM.docs import ExtCoreClass, eosCoreClass
-
-# main
+from PyCTPM.core import packageName, loadGeneralData
+from PyCTPM.docs import ExtCoreClass, eosCoreClass, dUtilityClass
 
 
 def main():
@@ -19,20 +17,40 @@ def main():
     print(packageName)
 
 
-def thermo(propName, compList, modelInput, unit="SI"):
+def thermo(propName, modelInput, unit="SI"):
     '''
     estimate thermodynamic properties
     args:
         propName: property name
-        compList: component list
-        modelInput: model input such as pressure, temperature
-        unit: set unit (SI, cgs)
+        modelInput:
+            compList: component list
+            MoFr: mole fraction
+            params: 
+                pressure
+                temperature
+            unit: set unit (SI, cgs)
     '''
     # try/except
     try:
         # get primary info
-        ExtCoreClassSet = ExtCoreClass(propName, compList, modelInput, unit)
-        return ExtCoreClassSet.propSet()
+        compList = modelInput.get("components")
+
+        # check component list
+        compListUnique = dUtilityClass.buildComponentList(compList)
+
+        # check property list
+        propNameCheck = dUtilityClass.checkAppPropList(propName)
+
+        # load general data
+        dataGeneral = loadGeneralData(compListUnique)
+
+        # class init
+        ExtCoreClassSet = ExtCoreClass(
+            dataGeneral, compListUnique, propNameCheck, modelInput, unit)
+
+        # cal
+        res = ExtCoreClassSet.propSet()
+        return res
     except Exception as e:
         raise
 
