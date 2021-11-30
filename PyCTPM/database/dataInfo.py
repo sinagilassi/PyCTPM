@@ -20,3 +20,6 @@ DATABASE_INFO = [
         "file": "data_viscosity.csv"
     },
 ]
+
+# general database info
+DATABASE_GENERAL_ITEMS = ["MW", "Tc", "Pc", "w", "dHf25", "dGf25"]

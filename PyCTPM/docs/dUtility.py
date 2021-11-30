@@ -29,8 +29,9 @@ class dUtilityClass:
         # try/except
         try:
             # prop list
-            propList = [item[compProperty] for item in compData]
-            return propList
+            propList = [float(item[compProperty]) for item in compData]
+            # convert to numpy
+            return np.array(propList)
         except Exception as e:
             raise
 
@@ -45,7 +46,7 @@ class dUtilityClass:
         try:
             # res
             res = []
-            # header length
+            # header length (***header name and header unit skip***)
             headerLength = len(headerIndex)
             # find index
             propIndex = compData[0].index(compProperty)

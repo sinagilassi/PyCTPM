@@ -1,7 +1,8 @@
 # test
-import unittest
-from ctpm import eosExe, showJson, main
-import core.constants as CONST
+# import unittest
+# from PyCTPM import eosExe, showJson, main
+from PyCTPM import main
+# import core.constants as CONST
 
 # input
 # argon
@@ -19,13 +20,13 @@ P = 0.496
 # molar volume (cm3/gmol)
 
 # model input
-modelInput = {
-    "eos": CONST.PENG_ROBINSON,
-    "pressure": P,
-    "temperature": T,
-    "components": components,
-    "moleFraction": xi
-}
+# modelInput = {
+#     "eos": CONST.PENG_ROBINSON,
+#     "pressure": P,
+#     "temperature": T,
+#     "components": components,
+#     "moleFraction": xi
+# }
 
 # single component estimation
 # res = eosExe(modelInput)

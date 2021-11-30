@@ -6,7 +6,7 @@ import json
 import os
 # internals
 import PyCTPM.core.constants as CONST
-from PyCTPM.core import packageName, loadGeneralData
+from PyCTPM.core import packageName, loadAllData, loadGeneralDataV1, loadGeneralDataInfo, loadGeneralDataV2, checkUnitGeneralData
 from PyCTPM.docs import ExtCoreClass, eosCoreClass, dUtilityClass
 
 
@@ -41,16 +41,33 @@ def thermo(propName, modelInput, unit="SI"):
         # check property list
         propNameCheck = dUtilityClass.checkAppPropList(propName)
 
-        # load general data
-        dataGeneral = loadGeneralData(compListUnique)
+        # load all data
+        dataLoaded = loadAllData(compListUnique)
 
         # class init
         ExtCoreClassSet = ExtCoreClass(
-            dataGeneral, compListUnique, propNameCheck, modelInput, unit)
+            dataLoaded, compListUnique, propNameCheck, modelInput, unit)
 
         # cal
         res = ExtCoreClassSet.propSet()
         return res
+    except Exception as e:
+        raise
+
+
+def thermoInfo(propName='ALL'):
+    '''
+    display the property unit stored in general database such as Cp, Tc, ...
+    args:
+        propName: name of property
+    '''
+    try:
+        # load general data info
+        infoDataGeneral = loadGeneralDataInfo()[0]
+        # get unit
+        getUnit = checkUnitGeneralData(infoDataGeneral, propName)
+        # res
+        return getUnit
     except Exception as e:
         raise
 

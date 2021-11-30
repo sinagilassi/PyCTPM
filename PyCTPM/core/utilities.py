@@ -68,7 +68,7 @@ def comp():
         raise
 
 
-def loadGeneralData(compList):
+def loadGeneralDataV1(compList):
     '''
     load general data of components
     args:
@@ -114,6 +114,116 @@ def loadGeneralData(compList):
         raise
 
 
+def loadGeneralDataV2(compList):
+    '''
+    load general data of components
+    args:
+        compList: component list
+    '''
+    try:
+        # data path
+        dataMainDir = packageShortName + '\database'
+        dataFile = DATABASE_INFO[0]['file']
+        dataPath = os.path.join(dataMainDir, dataFile)
+
+        csv.register_dialect('myDialect', delimiter=',',
+                             skipinitialspace=True, quoting=csv.QUOTE_MINIMAL)
+
+        # component data
+        compData = []
+        compDataIndex = []
+        compDataSelected = []
+
+        file = open(dataPath, 'r')
+        reader = csv.DictReader(file)
+
+        # skip unit row
+        next(reader, None)
+
+        # convert to dict
+        for row in reader:
+            compData.append(row)
+
+        # find compo index in data comp
+        for i in compList:
+            _loop1 = [j for j, item in enumerate(
+                compData) if i in item.values()]
+            compDataIndex.append(_loop1[0])
+
+        # select
+        for j in compDataIndex:
+            compDataSelected.append(compData[j])
+
+        return compDataSelected
+    except Exception as e:
+        raise
+
+
+def loadGeneralDataInfo():
+    '''
+    load info of the general data of components
+    '''
+    try:
+        # data path
+        dataMainDir = packageShortName + '\database'
+        dataFile = DATABASE_INFO[0]['file']
+        dataPath = os.path.join(dataMainDir, dataFile)
+
+        csv.register_dialect('myDialect', delimiter=',',
+                             skipinitialspace=True, quoting=csv.QUOTE_MINIMAL)
+
+        # component data
+        infoData = []
+
+        file = open(dataPath, 'r')
+        reader = csv.DictReader(file)
+
+        k = 0
+        # save title/unit
+        for row in reader:
+            if k < 1:
+                infoData.append(row)
+                k += 1
+            else:
+                break
+
+        return infoData
+    except Exception as e:
+        raise Exception("loading database failed!", e)
+
+
+def checkUnitGeneralData(headerInfo, propName):
+    '''
+    display info of the general data of components 
+        header 1: symbol
+        header 2: unit
+    args:
+        headerInfo: the first two rows
+        propName: the symbol of property
+    '''
+    try:
+        if propName == 'ALL':
+            # delete
+            headerInfo.pop("no")
+            headerInfo.pop("component-name")
+            headerInfo.pop("component-symbol")
+            return headerInfo
+        else:
+            # find
+            propUnit = ''
+            for key in headerInfo.keys():
+                if key == propName:
+                    propUnit = headerInfo[key]
+
+            if not propUnit:
+                raise Exception("property unit not found!")
+            else:
+                return propUnit
+
+    except Exception as e:
+        raise Exception("try error!", e)
+
+
 def csvLoader(databaseName, compList):
     '''
     load database
@@ -149,3 +259,86 @@ def csvLoader(databaseName, compList):
         print(0)
     except Exception as e:
         raise
+
+
+def csvLoaderV2(compList, databaseName, rowsSkip=0):
+    '''
+    load csv data of components
+    args:
+        compList: component list
+    output:
+        dict
+    '''
+    try:
+        # data path
+        dataMainDir = packageShortName + '\database'
+        dataFile = databaseName
+        dataPath = os.path.join(dataMainDir, dataFile)
+
+        csv.register_dialect('myDialect', delimiter=',',
+                             skipinitialspace=True, quoting=csv.QUOTE_MINIMAL)
+
+        # component data
+        compData = []
+        compDataIndex = []
+        compDataSelected = []
+
+        file = open(dataPath, 'r')
+        reader = csv.DictReader(file)
+
+        # skip unit row
+        if rowsSkip > 0:
+            for r in range(rowsSkip):
+                next(reader, None)
+
+        # convert to dict
+        for row in reader:
+            compData.append(row)
+
+        # find compo index in data comp
+        for i in compList:
+            _loop1 = [j for j, item in enumerate(
+                compData) if i in item.values()]
+            compDataIndex.append(_loop1[0])
+
+        # select
+        for j in compDataIndex:
+            compDataSelected.append(compData[j])
+
+        return compDataSelected
+    except Exception as e:
+        raise
+
+
+def loadAllData(compList):
+    '''
+    load all data (csv)
+    args:
+        compList: component list
+    output:
+        dict 
+    '''
+    try:
+        # database name
+
+        # load general data
+        _d1 = loadGeneralDataV2(compList)
+        # load heat capacity at constant pressure
+        _d2 = csvLoaderV2(compList, DATABASE_INFO[1]['file'])
+        # load thermal conductivity
+        _d3 = csvLoaderV2(compList, DATABASE_INFO[2]['file'], 1)
+        # load viscosity
+        _d4 = csvLoaderV2(compList, DATABASE_INFO[3]['file'], 1)
+
+        # data
+        databaseSet = {
+            DATABASE_INFO[0]['name']: _d1,
+            DATABASE_INFO[1]['name']: _d2,
+            DATABASE_INFO[2]['name']: _d3,
+            DATABASE_INFO[3]['name']: _d4
+        }
+        # return
+        return databaseSet
+
+    except Exception as e:
+        raise Exception("loading failed! ", e)
