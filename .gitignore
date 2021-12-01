@@ -49,4 +49,5 @@ Thumbs.db
 
 # python
 ctpm.egg-info/*
+PyCTPM.egg-info/*
 build/*
