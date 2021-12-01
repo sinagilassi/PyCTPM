@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 # import package/module
 import PyCTPM
-from PyCTPM import thermo, comp, thermoInfo
+from PyCTPM import thermo, thermoInfo
 
 
 # component list

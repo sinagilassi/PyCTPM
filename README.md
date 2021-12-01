@@ -83,6 +83,9 @@ print("PyCTPM description: ", PyCTPM.__description__)
 # component available in the database
 PackInfo.components()
 
+# property
+PackInfo.properties()
+
 # property list
 propNameList = ["MW", "Tc", "Pc", "w", "dHf25", "dGf25"]
 

@@ -2,8 +2,11 @@
 # -------------
 
 # import modules/packages
+
+# internals
 from PyCTPM.core import comp as compList
 from PyCTPM.core.info import packageName, packageShortName, __version__, __description__
+from PyCTPM.database.dataInfo import DATABASE_GENERAL_ITEMS_FULL
 
 
 class PackInfo:
@@ -43,15 +46,29 @@ class PackInfo:
         compListSet = compList()
         # add header
         data = [['COMPONENT-NAME', 'SYMBOL'], *compListSet]
+        # log
+        PackInfo.logData(data)
 
+    @staticmethod
+    def properties():
+        propertySet = DATABASE_GENERAL_ITEMS_FULL
+        # largest
+        propertyNames = max([len(item[0]) for item in propertySet]) + 5
+        # add header
+        data = [['PROPERTY-NAME', 'SYMBOL'], *propertySet]
+        # log
+        PackInfo.logData(data, colCenterLen=propertyNames)
+
+    def logData(data, colCenterLen=20):
         # set
-        dash = '-' * 40
+        dash = '-' * (colCenterLen*2)
 
         for i in range(len(data)):
             if i == 0:
                 print(dash)
-                print('{:^20s}{:^20s}'.format(data[i][0], data[i][1]))
+                print('{:^{colCenterLen}s}{:^{colCenterLen}s}'.format(
+                    data[i][0], data[i][1], colCenterLen=colCenterLen))
                 print(dash)
             else:
-                print('{:<20s}{:>0s}'.format(
-                    data[i][0].capitalize(), data[i][1]))
+                print('{:<{colCenterLen}s}{:>0s}'.format(
+                    data[i][0].capitalize(), data[i][1], colCenterLen=colCenterLen))

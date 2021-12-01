@@ -13,3 +13,6 @@ print("PyCTPM description: ", PyCTPM.__description__)
 
 # components
 PackInfo.components()
+
+# property
+PackInfo.properties()
