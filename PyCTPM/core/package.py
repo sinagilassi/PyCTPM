@@ -55,9 +55,9 @@ class PackInfo:
         # largest
         propertyNames = max([len(item[0]) for item in propertySet]) + 5
         # add header
-        data = [['PROPERTY-NAME', 'SYMBOL'], *propertySet]
+        data = [['PROPERTY-NAME', 'SYMBOL', 'UNIT'], *propertySet]
         # log
-        PackInfo.logData(data, colCenterLen=propertyNames)
+        PackInfo.logProperties(data, colCenterLen=propertyNames)
 
     def logData(data, colCenterLen=20):
         # set
@@ -72,3 +72,17 @@ class PackInfo:
             else:
                 print('{:<{colCenterLen}s}{:>0s}'.format(
                     data[i][0].capitalize(), data[i][1], colCenterLen=colCenterLen))
+
+    def logProperties(data, colCenterLen=20):
+        # set
+        dash = '-' * (colCenterLen*3)
+
+        for i in range(len(data)):
+            if i == 0:
+                print(dash)
+                print('{:^{colCenterLen}s}{:^{colCenterLen}s}{:^{colCenterLen}s}'.format(
+                    data[i][0], data[i][1], data[i][2], colCenterLen=colCenterLen))
+                print(dash)
+            else:
+                print('{:<{colCenterLen}s}{:<{colCenterLen}s}{:>0s}'.format(
+                    data[i][0].capitalize(), data[i][1], data[i][2], colCenterLen=colCenterLen))

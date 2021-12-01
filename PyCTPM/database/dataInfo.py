@@ -28,8 +28,8 @@ DATABASE_INFO = [
 # general database info
 DATABASE_GENERAL_ITEMS = ["MW", "Tc", "Pc", "w", "dHf25", "dGf25"]
 DATABASE_GENERAL_ITEMS_FULL = [
-    ["molecular weight", "MW"], ["critical temperature", "Tc"], [
-        "critical pressure", "Pc"],
-    ["acentric factor", "w"], ["standard enthalpy of formation", "dHf25"], [
-        "Standard Gibbs free energy of formation", "dGf25"]
+    ["molecular weight", "MW", "g/mol"], ["critical temperature", "Tc", "K"], [
+        "critical pressure", "Pc", "bar"],
+    ["acentric factor", "w", "-"], ["standard enthalpy of formation", "dHf25", "kJ/mol"], [
+        "Standard Gibbs free energy of formation", "dGf25", "kJ/mol"]
 ]
