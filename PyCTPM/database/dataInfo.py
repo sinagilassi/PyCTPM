@@ -1,6 +1,7 @@
 # DATABASE INFO
 # --------------
 
+
 # database folder
 DATABASE_FOLDER_NAME = "database"
 

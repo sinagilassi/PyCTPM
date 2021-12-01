@@ -41,10 +41,6 @@ def comp():
     try:
         # data file
         dataFile = DATABASE_INFO[0]['file']
-        # data path
-        # dataMainDir = packageShortName + '\database'
-        # dataPath = os.path.join(dataMainDir, dataFile)
-
         # abs path
         pathAbs = os.path.abspath(os.path.dirname(__file__))
         # relative path to database file
@@ -66,7 +62,7 @@ def comp():
             next(reader, None)
 
             for row in reader:
-                compList.append((row[1], row[2]))
+                compList.append([row[1], row[2]])
 
         if len(compList) > 0:
             return compList
@@ -84,9 +80,18 @@ def loadGeneralDataV1(compList):
     '''
     try:
         # data path
-        dataMainDir = packageShortName + '\database'
+        # dataMainDir = packageShortName + '\database'
+        # dataFile = DATABASE_INFO[0]['file']
+        # dataPath = os.path.join(dataMainDir, dataFile)
+
+        # data file
         dataFile = DATABASE_INFO[0]['file']
-        dataPath = os.path.join(dataMainDir, dataFile)
+        # abs path
+        pathAbs = os.path.abspath(os.path.dirname(__file__))
+        # relative path to database file
+        dataPathDirRel = '../' + DATABASE_FOLDER_NAME
+        # database file
+        dataPath = os.path.join(pathAbs, dataPathDirRel, dataFile)
 
         csv.register_dialect('myDialect', delimiter=',',
                              skipinitialspace=True, quoting=csv.QUOTE_MINIMAL)
@@ -130,9 +135,18 @@ def loadGeneralDataV2(compList):
     '''
     try:
         # data path
-        dataMainDir = packageShortName + '\database'
+        # dataMainDir = packageShortName + '\database'
+        # dataFile = DATABASE_INFO[0]['file']
+        # dataPath = os.path.join(dataMainDir, dataFile)
+
+        # data file
         dataFile = DATABASE_INFO[0]['file']
-        dataPath = os.path.join(dataMainDir, dataFile)
+        # abs path
+        pathAbs = os.path.abspath(os.path.dirname(__file__))
+        # relative path to database file
+        dataPathDirRel = '../' + DATABASE_FOLDER_NAME
+        # database file
+        dataPath = os.path.join(pathAbs, dataPathDirRel, dataFile)
 
         csv.register_dialect('myDialect', delimiter=',',
                              skipinitialspace=True, quoting=csv.QUOTE_MINIMAL)
@@ -173,9 +187,18 @@ def loadGeneralDataInfo():
     '''
     try:
         # data path
-        dataMainDir = packageShortName + '\database'
+        # dataMainDir = packageShortName + '\database'
+        # dataFile = DATABASE_INFO[0]['file']
+        # dataPath = os.path.join(dataMainDir, dataFile)
+
+        # data file
         dataFile = DATABASE_INFO[0]['file']
-        dataPath = os.path.join(dataMainDir, dataFile)
+        # abs path
+        pathAbs = os.path.abspath(os.path.dirname(__file__))
+        # relative path to database file
+        dataPathDirRel = '../' + DATABASE_FOLDER_NAME
+        # database file
+        dataPath = os.path.join(pathAbs, dataPathDirRel, dataFile)
 
         csv.register_dialect('myDialect', delimiter=',',
                              skipinitialspace=True, quoting=csv.QUOTE_MINIMAL)
@@ -242,14 +265,21 @@ def csvLoader(databaseName, compList):
     '''
     try:
         # data path
-        dataMainDir = packageShortName + '\database'
+        # dataMainDir = packageShortName + '\database'
         dataFile = [item['file']
                     for item in DATABASE_INFO if item['name'] == databaseName]
         # check
         if len(dataFile) == 0:
             raise Exception("Database is not found!")
 
-        dataPath = os.path.join(dataMainDir, dataFile[0])
+        # abs path
+        pathAbs = os.path.abspath(os.path.dirname(__file__))
+        # relative path to database file
+        dataPathDirRel = '../' + DATABASE_FOLDER_NAME
+        # database file
+        dataPath = os.path.join(pathAbs, dataPathDirRel, dataFile[0])
+
+        # dataPath = os.path.join(dataMainDir, dataFile[0])
 
         with open(dataPath, 'r') as file:
             reader = csv.reader(file)
@@ -279,9 +309,18 @@ def csvLoaderV2(compList, databaseName, rowsSkip=0):
     '''
     try:
         # data path
-        dataMainDir = packageShortName + '\database'
+        # dataMainDir = packageShortName + '\database'
+        # dataFile = databaseName
+        # dataPath = os.path.join(dataMainDir, dataFile)
+
+        # data file
         dataFile = databaseName
-        dataPath = os.path.join(dataMainDir, dataFile)
+        # abs path
+        pathAbs = os.path.abspath(os.path.dirname(__file__))
+        # relative path to database file
+        dataPathDirRel = '../' + DATABASE_FOLDER_NAME
+        # database file
+        dataPath = os.path.join(pathAbs, dataPathDirRel, dataFile)
 
         csv.register_dialect('myDialect', delimiter=',',
                              skipinitialspace=True, quoting=csv.QUOTE_MINIMAL)
