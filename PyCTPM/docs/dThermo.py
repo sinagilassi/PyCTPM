@@ -191,20 +191,16 @@ def calStandardEnthalpyOfReaction(reaExpr, standardHeatOfFormationList):
         reaType = reaExpr.replace("<", "").replace(">", "")
         # reactant/products list
         compR = reaType.replace(r" ", "").split("=")
-        # print(f"compR1 {compR}")
 
         # componets
         reactantList = re.findall(r"([0-9.]*)([a-zA-Z0-9.]+)", compR[0])
-        # print(f"reactantList {reactantList}")
         productList = re.findall(r"([0-9.]*)([a-zA-Z0-9.]+)", compR[1])
-        # print(f"productList {productList}")
-        # print("------------------")
 
         # standard heat of formation at 25
         _dHf25iReactantList = []
         _dHf25iProductList = []
 
-        # load data
+        # load data [kJ/mol]
         loadData = standardHeatOfFormationList
 
         # reactant
@@ -228,15 +224,11 @@ def calStandardEnthalpyOfReaction(reaExpr, standardHeatOfFormationList):
         dHf25iReactantList = np.array(_dHf25iReactantList).flatten()
         dHf25iProductList = np.array(_dHf25iProductList).flatten()
 
-        # print(f"dHf25iReactantList {dHf25iReactantList}")
-        # print(f"dHf25iProductList {dHf25iProductList}")
-
-        # standard heat of formation at 25 [kJ/kmol]
+        # standard heat of formation at 25 [kJ/mol]
         dHf25iProductListSum = np.sum(dHf25iProductList)
         dHf25iReactantListSum = np.sum(dHf25iReactantList)
-        # print(f"dHf25iProductListSum {dHf25iProductListSum}")
-        # print(f"dHf25iReactantListSum {dHf25iReactantListSum}")
 
+        # convert kj/mol => kJ/kmol
         dHf25 = (dHf25iProductListSum-dHf25iReactantListSum)*1000.00
         # res
         return dHf25
