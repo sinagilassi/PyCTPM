@@ -34,7 +34,7 @@ this code is automatically converted to python as:
 
 ```python
 # component list
-compList = ["H2","CO2","H2O","CO","CH3OH","DME"]
+compList = ["H2","CO2","H2O","CO","CH4O","C2H6O"]
 ```
 
 2- OTHER PROPERTIES
