@@ -39,10 +39,8 @@ compList = ["H2","CO2","H2O","CO","CH4O","C2H6O"]
 
 2- OTHER PROPERTIES
 
-Mole fraction of each component is defined as an element in a python list as:
-
 ```python
-# mole fraction
+# Mole fraction of each component is defined as an element in a python list as:
 MoFri = [0.50, 0.25, 0.0001, 0.25, 0.0001, 0.0001]
 
 # temperature [K]
@@ -63,6 +61,8 @@ modelInput = {
     "eq": 'DEFAULT'
 }
 ```
+
+Note:
 
 The modelInput keys, unit and eq, they should be set as above in the current version.
 
