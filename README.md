@@ -1,13 +1,18 @@
-
 # Python Chemical Thermodynamics for Process Modeling
 
-Python Chemical Thermodynamics for Process Modeling (PyCTPM) is an open-source package which can be used to estimate thermodynamic porperties in a typical process modeling. 
-The current version consists of methods for estimation of gas properties as: 
+Python Chemical Thermodynamics for Process Modeling (PyCTPM) is an open-source package which can be used to estimate thermodynamic properties in a typical process modeling.
+The current version consists of methods for estimation of gas properties as:
 
 1. Diffusivity coefficient (DiCo)
 2. Heat capacity at constant pressure (Cpp)
-3. Thermal condictivity (ThCo)
+3. Thermal conductivity (ThCo)
 4. Viscosity (Vi)
+
+The above thermodynamic properties can be estimate for single and multi-component systems.
+
+Note:
+
+DiCo-MIX is the Diffusivity coefficient for a multi-component system
 
 # Getting started
 
@@ -19,13 +24,13 @@ pip install PyCTPM
 
 ## Documentation
 
-PyCTPM can be initialized as follows: 
+PyCTPM can be initialized as follows:
 
 1- COMPONENT SELECTION
 
 In order to define these components: H2; CO2; H2O; CO; CH3OH; DME
 
-this code is automaticly converted to python as:
+this code is automatically converted to python as:
 
 ```python
 # component list
@@ -59,9 +64,9 @@ modelInput = {
 }
 ```
 
-The modelInput keys, unit and eq, they should be set as above in the current version. 
+The modelInput keys, unit and eq, they should be set as above in the current version.
 
-3- ESTIMATE PROPERTIES 
+3- ESTIMATE PROPERTIES
 
 ```python
 
@@ -141,7 +146,3 @@ For any question, you can contact me on [LinkedIn](https://www.linkedin.com/in/s
 ## Authors
 
 - [@sinagilassi](https://www.github.com/sinagilassi)
-
-
-
-

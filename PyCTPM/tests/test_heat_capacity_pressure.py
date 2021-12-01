@@ -33,17 +33,17 @@ modelInput = {
     "eq": 'DEFAULT'
 }
 
-# heat capacity of components at desired temp
+# heat capacity of components at desired temp [kJ/kmol.K]
 res = thermo("Cpp", modelInput)
 # log
 print("Cpp: ", res)
 
-# mean heat capacity of components at desired temp (Tref = 25 C)
+# mean heat capacity of components at desired temp (Tref = 25 C) [kJ/kmol.K]
 res = thermo("Cpp-MEAN", modelInput)
 # log
 print("Cpp-MEAN: ", res)
 
-# mixture heat capacity of components at desired temp (Tref = 25 C)
+# mixture heat capacity of components at desired temp (Tref = 25 C) [kJ/kmol.K]
 res = thermo("Cpp-MIX", modelInput)
 # log
 print("Cpp-MIX: ", res)
