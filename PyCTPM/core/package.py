@@ -75,14 +75,17 @@ class PackInfo:
 
     def logProperties(data, colCenterLen=20):
         # set
-        dash = '-' * (colCenterLen*3)
+        dash = '-' * (colCenterLen*2)
+
+        # col length set
+        colLenManualSet = round(colCenterLen/2)
 
         for i in range(len(data)):
             if i == 0:
                 print(dash)
-                print('{:^{colCenterLen}s}{:^{colCenterLen}s}{:^{colCenterLen}s}'.format(
-                    data[i][0], data[i][1], data[i][2], colCenterLen=colCenterLen))
+                print('{:^{colCenterLen}s}{:^{colLenManualSet}s}{:^{colLenManualSet}s}'.format(
+                    data[i][0], data[i][1], data[i][2], colCenterLen=colCenterLen, colLenManualSet=colLenManualSet))
                 print(dash)
             else:
-                print('{:<{colCenterLen}s}{:<{colCenterLen}s}{:>0s}'.format(
-                    data[i][0].capitalize(), data[i][1], data[i][2], colCenterLen=colCenterLen))
+                print('{:<{colCenterLen}s}{:<{colLenManualSet}s}{:>0s}'.format(
+                    data[i][0].capitalize(), data[i][1], data[i][2], colCenterLen=colCenterLen, colLenManualSet=colLenManualSet))
