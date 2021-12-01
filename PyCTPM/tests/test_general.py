@@ -11,7 +11,7 @@ from PyCTPM import thermo, comp, thermoInfo
 # print("PyCTPM description: ", PyCTPM.__description__)
 
 # component available
-# print(comp())
+print(comp())
 
 # NOTE
 # components

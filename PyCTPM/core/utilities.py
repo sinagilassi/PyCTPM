@@ -8,7 +8,7 @@ import pandas as pd
 import csv
 # internal
 from PyCTPM.core.config import ROUND_FUN_ACCURACY
-from PyCTPM.database import DATABASE_INFO
+from PyCTPM.database import DATABASE_INFO, DATABASE_FOLDER_NAME
 from PyCTPM.core.info import packageShortName
 
 
@@ -39,10 +39,18 @@ def comp():
     list of available components in the database
     '''
     try:
-        # data path
-        dataMainDir = packageShortName + '\database'
+        # data file
         dataFile = DATABASE_INFO[0]['file']
-        dataPath = os.path.join(dataMainDir, dataFile)
+        # data path
+        # dataMainDir = packageShortName + '\database'
+        # dataPath = os.path.join(dataMainDir, dataFile)
+
+        # abs path
+        pathAbs = os.path.abspath(os.path.dirname(__file__))
+        # relative path to database file
+        dataPathDirRel = '../' + DATABASE_FOLDER_NAME
+        # database file
+        dataPath = os.path.join(pathAbs, dataPathDirRel, dataFile)
 
         # component list
         compList = []
