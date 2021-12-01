@@ -72,7 +72,7 @@ The modelInput keys, unit and eq, they should be set as above in the current ver
 
 # import package/module
 import PyCTPM
-from PyCTPM import thermo, comp, thermoInfo
+from PyCTPM import thermo, thermoInfo, PackInfo
 
 # version
 print("PyCTPM version: ", PyCTPM.__version__)
@@ -81,7 +81,7 @@ print("PyCTPM version: ", PyCTPM.__version__)
 print("PyCTPM description: ", PyCTPM.__description__)
 
 # component available in the database
-print(comp())
+PackInfo.components()
 
 # property list
 propNameList = ["MW", "Tc", "Pc", "w", "dHf25", "dGf25"]
