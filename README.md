@@ -14,6 +14,12 @@ Note:
 
 DiCo-MIX is the Diffusivity coefficient for a multi-component system
 
+# Example
+
+You can also run PyCTPM on Google Colaboratory as:
+
+1- [Example 1](https://colab.research.google.com/drive/1vyWxL_OKn304sb-yPLKisKc70lDozwtl?usp=sharing)
+
 # Getting started
 
 You can install this package
