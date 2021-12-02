@@ -21,8 +21,13 @@ T = 523
 # pressure [Pa]
 P = 3500000
 
+# viscosity of components in the mixture [Pa.s]
+Vi = [1.30232874e-05, 2.48896262e-05, 1.81758741e-05,
+      2.65479558e-05, 1.72349516e-05, 1.59648895e-06]
+
 # model input
-modelInput = {
+# without Vi-MIX
+modelInput1 = {
     "components": compList,
     "MoFri": MoFri,
     "params": {
@@ -33,17 +38,21 @@ modelInput = {
     "eq": 'DEFAULT'
 }
 
-# heat capacity of components at desired temp [kJ/kmol.K]
-res = thermo("Cpp", modelInput)
-# log
-print("Cpp: ", res)
+# with Vi-MIX
+modelInput2 = {
+    "components": compList,
+    "MoFri": MoFri,
+    "params": {
+        "P": P,
+        "T": T,
+    },
+    "unit": "SI",
+    "eq": 'DEFAULT',
+    "Vi": Vi
+}
 
-# mean heat capacity of components at desired temp (Tref = 25 C) [kJ/kmol.K]
-res = thermo("Cpp-MEAN", modelInput)
-# log
-print("Cppi-MEAN: ", res)
 
-# mixture heat capacity of components at desired temp (Tref = 25 C) [kJ/kmol.K]
-res = thermo("Cpp-MIX", modelInput)
+# viscosity mixture [Pa.s]
+res = thermo("Vi-MIX", modelInput1)
 # log
-print("Cpp-MIX: ", res)
+print("Vi-MIX: ", res)

@@ -21,8 +21,13 @@ T = 523
 # pressure [Pa]
 P = 3500000
 
+# mean heat capacity of components at desired temp (Tref = 25 C) [kJ/kmol.K]
+CppiMEAN = [28.60520155, 41.08544857, 34.75029085,
+            29.62105504, 53.71405537, 79.34119544]
+
 # model input
-modelInput = {
+# without CppMEAN
+modelInput1 = {
     "components": compList,
     "MoFri": MoFri,
     "params": {
@@ -30,20 +35,23 @@ modelInput = {
         "T": T,
     },
     "unit": "SI",
-    "eq": 'DEFAULT'
+    "eq": 'DEFAULT',
 }
 
-# heat capacity of components at desired temp [kJ/kmol.K]
-res = thermo("Cpp", modelInput)
-# log
-print("Cpp: ", res)
-
-# mean heat capacity of components at desired temp (Tref = 25 C) [kJ/kmol.K]
-res = thermo("Cpp-MEAN", modelInput)
-# log
-print("Cppi-MEAN: ", res)
+# with CppMEAN
+modelInput2 = {
+    "components": compList,
+    "MoFri": MoFri,
+    "params": {
+        "P": P,
+        "T": T,
+    },
+    "unit": "SI",
+    "eq": 'DEFAULT',
+    "Cppi-MEAN": CppiMEAN
+}
 
 # mixture heat capacity of components at desired temp (Tref = 25 C) [kJ/kmol.K]
-res = thermo("Cpp-MIX", modelInput)
+res = thermo("Cpp-MIX", modelInput1)
 # log
 print("Cpp-MIX: ", res)

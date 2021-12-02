@@ -21,8 +21,12 @@ T = 523
 # pressure [Pa]
 P = 3500000
 
+# thermal conductivity of components in the mixture [W/m.K]
+ThCoi = [0.27458546, 0.03458594, 0.03965464, 0.03950025, 0.04261338, 0.0457769]
+
 # model input
-modelInput = {
+# without ThCoi
+modelInput1 = {
     "components": compList,
     "MoFri": MoFri,
     "params": {
@@ -33,17 +37,20 @@ modelInput = {
     "eq": 'DEFAULT'
 }
 
-# heat capacity of components at desired temp [kJ/kmol.K]
-res = thermo("Cpp", modelInput)
-# log
-print("Cpp: ", res)
+# with ThCoi
+modelInput2 = {
+    "components": compList,
+    "MoFri": MoFri,
+    "params": {
+        "P": P,
+        "T": T,
+    },
+    "unit": "SI",
+    "eq": 'DEFAULT',
+    "ThCoi": ThCoi
+}
 
-# mean heat capacity of components at desired temp (Tref = 25 C) [kJ/kmol.K]
-res = thermo("Cpp-MEAN", modelInput)
+# viscosity mixture [W/m.K]
+res = thermo("ThCo-MIX", modelInput2)
 # log
-print("Cppi-MEAN: ", res)
-
-# mixture heat capacity of components at desired temp (Tref = 25 C) [kJ/kmol.K]
-res = thermo("Cpp-MIX", modelInput)
-# log
-print("Cpp-MIX: ", res)
+print("ThCo-MIX: ", res)

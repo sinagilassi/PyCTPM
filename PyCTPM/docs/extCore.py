@@ -167,9 +167,15 @@ class ExtCoreClass:
             eqSet = self.modelInput.get('eq', -1)
             eq = 1 if eqSet == "DEFAULT" else eqSet
 
+            # REVIEW
             # mean heat capacity at constant pressure [kJ/kmol.K]
-            CppiMean = calMeanHeatCapacityAtConstantPressure(
-                compList, params, eq, T)
+            CppiMeanInput = self.modelInput.get('Cppi-MEAN', -1)
+            # check user input
+            if CppiMeanInput == -1:
+                CppiMean = calMeanHeatCapacityAtConstantPressure(
+                    compList, params, eq, T)
+            else:
+                CppiMean = np.array(CppiMeanInput)
 
             # mole fraction
             MoFri = np.array(self.modelInput.get('MoFri'))
@@ -196,8 +202,15 @@ class ExtCoreClass:
             setData_2 = self.dataSet()
             # temp [K]
             T = self.modelInput['params']['T']
+
+            # REVIEW
             # viscosity [Pa.s]
-            Vi = calGasViscosity(compList, T, setData)
+            ViInput = self.modelInput.get('Vi', -1)
+            # check user input
+            if ViInput == -1:
+                Vi = calGasViscosity(compList, T, setData)
+            else:
+                Vi = np.array(ViInput)
 
             # select calculation method
             # equation
@@ -242,8 +255,15 @@ class ExtCoreClass:
             setData_2 = self.dataSet()
             # temp [K]
             T = self.modelInput['params']['T']
-            # cal [W/m.K]
-            ThCoi = calGasThermalConductivity(compList, T, setData)
+
+            # REVIEW
+            # thermal conductivity [W/m.K]
+            ThCoiInput = self.modelInput.get('ThCoi', -1)
+            # check user input
+            if ThCoiInput == -1:
+                ThCoi = calGasThermalConductivity(compList, T, setData)
+            else:
+                ThCoi = np.array(ThCoiInput)
 
             # select calculation method
             # equation
