@@ -50,7 +50,7 @@ modelInput2 = {
     "ThCoi": ThCoi
 }
 
-# viscosity mixture [W/m.K]
+# thermal conductivity mixture [W/m.K]
 res = thermo("ThCo-MIX", modelInput2)
 # log
 print("ThCo-MIX: ", res)
