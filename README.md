@@ -2,7 +2,7 @@
 
 ![PyPI - License](https://img.shields.io/pypi/l/PyCTPM) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/PyCTPM) ![PyPI](https://img.shields.io/pypi/v/PyCTPM) ![PyPI - Downloads](https://img.shields.io/pypi/dm/PyCTPM)
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1vyWxL_OKn304sb-yPLKisKc70lDozwtl?usp=sharing) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1vyWxL_OKn304sb-yPLKisKc70lDozwtl?usp=sharing)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1vyWxL_OKn304sb-yPLKisKc70lDozwtl?usp=sharing) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1ZbMuwkVkTxYNhVCnyfBkEvDrez_aH8bx?usp=sharing)
 
 Python Chemical Thermodynamics for Process Modeling (PyCTPM) is an open-source package which can be used to estimate thermodynamic properties in a typical process modeling.
 The current version consists of methods for estimation of gas properties as:
