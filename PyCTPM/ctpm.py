@@ -6,7 +6,8 @@ import json
 import os
 # internals
 import PyCTPM.core.constants as CONST
-from PyCTPM.core import packageName, loadAllData, loadGeneralDataV1, loadGeneralDataInfo, loadGeneralDataV2, checkUnitGeneralData
+from PyCTPM.core import packageName, loadAllData, loadGeneralDataV1, \
+    loadGeneralDataInfo, loadGeneralDataV2, checkUnitGeneralData, loadDataEOS
 from PyCTPM.docs import ExtCoreClass, eosCoreClass, dUtilityClass
 
 
@@ -72,34 +73,77 @@ def thermoInfo(propName='ALL'):
         raise
 
 
-def eosExe(modelInput):
+def eos(modelInput):
     """
-        eos init
+    # Estimation of molar-volume at fixed pressure and temperature using a EOS as:
+        1. van der Waals
+        2. Redlich-Kwong and Soave
+        3. Peng-Robinson
+
+        Z is determined thereby molar-volume is calculated.
+        eosMode: pure/mixture 
+
+    args:
+        modelInput:
+            eos-name: eos equation name
+            compList: component list
+            MoFr: mole fraction
+            params: 
+                pressure [Pa]
+                temperature [K]
+            unit: set unit (SI: default, cgs)
+
+    output:
+        z: list of compressibility factor
+        Vm: list of molar volume [m^3/mol]
     """
-    # print(f"modelInput {modelInput}")
+    # get primary info
+    compList = modelInput.get("components")
     # eos method
-    eosNameSet = modelInput['eos']
-    print(f"eosNameSet: {eosNameSet}")
-    # model input
-    pressureSet = modelInput['pressure']
-    print(f"pressureSet: {pressureSet}")
-    temperatureSet = modelInput['temperature']
-    print(f"temperatureSet: {temperatureSet}")
-    componentsSet = modelInput['components']
-    print(f"componentsSet: {componentsSet}")
-    moleFractionSet = modelInput['moleFraction']
-    print(f"moleFractionSet: {moleFractionSet}")
+    eosModel = modelInput.get('eos-model')
+    # ole fraction
+    moleFraction = modelInput.get('MoFr', 1)
+    # params
+    params = modelInput.get('params')
+
+    # check component list
+    compListUnique = dUtilityClass.buildComponentList(compList)
+
+    # load all data
+    compData = loadDataEOS(compListUnique)
 
     # * init eos class
     _eosCoreClass = eosCoreClass(
-        pressureSet, temperatureSet, componentsSet, eosNameSet, moleFractionSet)
+        compData, compList, eosModel, moleFraction, params)
     # select method
     selectEOS = {
         "PR": lambda: _eosCoreClass._eosPR()
     }
 
     # return
-    return selectEOS.get(eosNameSet)()
+    return selectEOS.get(eosModel)()
+
+
+def fugacity(modelInput):
+    '''
+    # Calculate fugacity for gas/liquid/solid phase
+
+    args:
+        modelInput:
+            eos-name: eos equation name
+            phase: component phase (gas/liquid/solid)
+            compList: component list
+            MoFr: mole fraction
+            params: 
+                pressure [Pa]
+                temperature [K]
+            unit: set unit (SI: default, cgs)  
+    '''
+    try:
+        # find Z and molar volume
+        eosRes = eos(modelInput)
+    except Exception as e:
+        raise
 
 
 #! test json

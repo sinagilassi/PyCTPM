@@ -7,6 +7,7 @@
 # import packages/modules
 import numpy as np
 from scipy.optimize import fsolve
+import math
 # internals
 import PyCTPM.core.constants as CONST
 from PyCTPM.core.utilities import roundNum, removeDuplicatesList
@@ -15,7 +16,7 @@ from PyCTPM.core.config import EOS_ROOT_ACCURACY
 
 class eosClass:
     # init
-    def __init__(self, P, T, eosName, moleFraction) -> None:
+    def __init__(self, P, T, eosName, moleFraction=[]):
         self.P = P
         self.T = T
         self.eosName = eosName
@@ -25,7 +26,6 @@ class eosClass:
     def componentNoSet(self):
         return len(self.moleFraction)
 
-    #
     def eos_A(self, a):
         # A value
         # var
@@ -69,7 +69,6 @@ class eosClass:
         # return
         return res
 
-    # !
     def eos_beta(self, A, B):
         """ calculate parameter beta """
         # var
@@ -120,23 +119,22 @@ class eosClass:
         data = (alpha, beta, gamma)
         #
         zList = []
-        zGuess = np.linspace(0, 1, 11)
+        zGuess = np.linspace(0, 2, 21)
         for item in zGuess:
             zLoop = fsolve(self.fZ, [item], args=data)
             zList.append(zLoop[0])
 
         # list -> array
         zListArray = np.array(zList)
-        # limit between 0,1
-        zListLimit = zListArray[np.where(
-            (zListArray >= 0.0) & (zListArray <= 1.0))]
-        # print(f"zListLimit: {zListLimit}")
-        # round z
-        zListRound = self.sortRootfZ(zListLimit)
-        # print(f"zListRound: {zListRound}")
+        # find real values
+        zListRealValues = np.isreal(zListArray)
+        # index to value
+        zListLimit = zListArray[np.where(zListRealValues == True)]
+        # set accuracy
+        zListLimit = self.sortRootfZ(zListLimit)
         #  remove duplicate items
-        zListNet = np.array(removeDuplicatesList(zListRound))
-        # print(f"zListNet: {zListNet}")
+        zListNet = np.array(removeDuplicatesList(zListLimit))
+
         # return
         return zListNet
 
@@ -209,6 +207,61 @@ class eosClass:
         res = np.sum(aMatrix)
         return res
 
-    # molar volume [cm3/gmol]
     def molarVolume(self, Z):
+        '''
+        calculate molar-volume [m^3/mol]
+
+        args:
+            Z: compressibility factor [-]
+
+        P: pressure [Pa]
+        T: temperature [K]
+        R: universal gas constant [J/mol.K]
+
+        output:
+            Vm: molar volume [m^3/mol]
+        '''
         return Z * ((CONST.R_CONST * self.T) / self.P)
+
+    def aPR(self, Pc, Tc, w):
+        '''
+        calculate peng-robinson a constant
+
+        args:
+            Pc: critical pressure [Pa]
+                its unit is compatible with R [J/mol.K]/[Pa.m^3/mol.K]
+            Tc: critical temperature [K]
+            w: acentric factors [-]
+
+        while universal gas constant [J/mol.K]
+
+        output:
+            a: PR constant [Pa.(m3^2)/(mol^2)]
+        '''
+        # check for w
+        if w < 0.49:
+            k = 0.37464 + 1.54226 * w - 0.26993 * (w**2)
+        else:
+            k = 0.379642 + 1.48503*w - 0.164423*(w**2) + 0.016666*(w**3)
+        alpha = math.pow(1 + k * (1 - math.sqrt(self.T / Tc)), 2)
+        a0 = (0.45723553 * (math.pow(CONST.R_CONST, 2) * math.pow(Tc, 2))) / Pc
+        res = a0*alpha
+        return res
+
+    # b
+    def bPR(self, Pc, Tc):
+        '''
+        calculate peng-robinson b constant
+
+        args:
+            Pc: critical pressure [Pa]
+                its unit is compatible with R [J/mol.K]/[Pa.m^3/mol.K]
+            Tc: critical temperature [K]
+
+        while universal gas constant [J/mol.K]
+
+        output:
+            b: PR constant [m^3/mol]  
+        '''
+        res = (0.07779607 * CONST.R_CONST * Tc) / Pc
+        return res

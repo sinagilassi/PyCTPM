@@ -26,7 +26,7 @@ class PackInfo:
 
     def __call__(self):
         '''
-        call when a new class is initialted 
+        call when a new class is initialled 
         '''
         compListSet = compList()
         compListSetStr = ' '.join(map(str, compListSet))
@@ -60,6 +60,9 @@ class PackInfo:
         PackInfo.logProperties(data, colCenterLen=propertyNames)
 
     def logData(data, colCenterLen=20):
+        '''
+        print results
+        '''
         # set
         dash = '-' * (colCenterLen*2)
 
@@ -74,6 +77,9 @@ class PackInfo:
                     data[i][0].capitalize(), data[i][1], colCenterLen=colCenterLen))
 
     def logProperties(data, colCenterLen=20):
+        '''
+        print results
+        '''
         # set
         dash = '-' * (colCenterLen*2)
 

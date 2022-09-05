@@ -1,5 +1,6 @@
 from PyCTPM.core.info import packageName, __version__, __description__, packageShortName
-from PyCTPM.core.utilities import removeDuplicatesList, comp, loadAllData, loadGeneralDataV1, loadGeneralDataInfo, loadGeneralDataV2, checkUnitGeneralData
+from PyCTPM.core.utilities import removeDuplicatesList, comp, loadAllData, loadGeneralDataV1, \
+    loadGeneralDataInfo, loadGeneralDataV2, checkUnitGeneralData, loadDataEOS
 # constants
 from PyCTPM.core.constants import Tref, R_CONST
 # package

@@ -389,3 +389,20 @@ def loadAllData(compList):
 
     except Exception as e:
         raise Exception("loading failed! ", e)
+
+
+def loadDataEOS(compList):
+    '''
+    load eos (general) data
+    args:
+        compList: component name list
+    output:
+        dict
+    '''
+    try:
+        # load general data
+        _d1 = loadGeneralDataV2(compList)
+        # return
+        return _d1
+    except Exception as e:
+        raise Exception("loading failed! ", e)

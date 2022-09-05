@@ -9,127 +9,103 @@ import PyCTPM.core.constants as CONST
 from PyCTPM.docs.eos import eosClass
 from PyCTPM.docs.eosData import dbClass
 
-# eos methods
-
 
 class eosCoreClass(eosClass):
     # number of components
     componentsNo = 0
     # init
 
-    def __init__(self, P, T, components, eosName, moleFraction) -> None:
-        self.P = P
-        self.T = T
+    def __init__(self, compData, components, eosName, moleFraction, params):
+        self.compData = compData
         self.components = components
         self.eosName = eosName
         self.moleFraction = moleFraction
+        self.params = params
+        # set PVT
+        self.P = params.get("P", 0)
+        self.T = params.get("T", 0)
+        self.componentsNo = len(self.components)
         # parent
-        super().__init__(P, T, eosName, moleFraction)
+        super().__init__(self.P, self.T, eosName, moleFraction)
 
     def classDes():
         print("functions used by all equation of states")
 
-    def _eosPR(self) -> float:
-        # class init
-        # ->  database
-        eosData = dbClass()
+    def _eosPR(self):
+        '''
+        find compressibility factor (Z) at specified P and T
+        then molar-volume is found.
+        '''
+        try:
+            # component data
+            componentsData = self.compData
 
-        componentsNo = len(self.components)
-        print(f"componentsNo: {componentsNo}")
+            # sorted data
+            # Pc [bar], Tc [K], w [-]
+            # ! Pc [bar] => [Pa]
+            componentsDataSorted = [
+                [float(item['Pc'])*1e5, float(item['Tc']), float(item['w'])] for item in componentsData]
 
-        # component data
-        componentsData = eosData.loadItemData(self.components)
-        # print(f"component data {componentsData}")
-        # sorted data
-        componentsDataSorted = [
-            [item['Pc'], item['Tc'], item['w']] for item in componentsData]
-        print("componentsDataSorted {}".format(componentsDataSorted))
+            # set a b matrix
+            a = np.zeros(self.componentsNo)
+            b = np.zeros(self.componentsNo)
 
-        # cal parameters
-        # a b matrix
-        a = np.zeros(componentsNo)
-        b = np.zeros(componentsNo)
+            count = 0
+            for item in componentsDataSorted:
+                aLoop = self.aPR(item[0], item[1], item[2])
+                # a.append(aLoop)
+                a[count] = aLoop
+                bLoop = self.bPR(item[0], item[1])
+                # b.append(bLoop)
+                b[count] = bLoop
+                count += 1
 
-        count = 0
-        for item in componentsDataSorted:
+            # check pure, multi-component system
+            if self.componentsNo > 1:
+                # mixing rule to calculate a/b
+                # kij
+                kij = self.kijFill()
+                aij = self.aijFill(a, kij)
+                aSet = self.aMixing(aij, self.moleFraction)
+                bSet = self.bMixing(b, self.moleFraction)
+            else:
+                # no change a/b (pure component)
+                aSet = a[0]
+                bSet = b[0]
 
-            print(f"item: {item}")
-            aLoop = self.pengRobinson_a(item[0], item[1], item[2])
-            # a.append(aLoop)
-            a[count] = aLoop
-            bLoop = self.pengRobinson_b(item[0], item[1])
-            # b.append(bLoop)
-            b[count] = bLoop
-            count += 1
+            # set parameters A,B
+            A = self.eos_A(aSet)
+            B = self.eos_B(bSet)
 
-        # log
-        print(f"a: {a} | b: {b}")
+            # build polynomial eos equation f(Z)
+            alpha = self.eos_alpha(B)
+            beta = self.eos_beta(A, B)
+            gamma = self.eos_gamma(A, B)
 
-        # check pure, multi-component system
-        if componentsNo > 1:
-            # mixing rule to calculate a/b
-            # kij
-            kij = self.kijFill()
-            aij = self.aijFill(a, kij)
-            aSet = self.aMixing(aij, self.moleFraction)
-            bSet = self.bMixing(b, self.moleFraction)
-        else:
-            # no change a/b
-            aSet = a[0]
-            bSet = b[0]
+            # find f(Z) root
+            rootList = self.findRootfZ(alpha, beta, gamma)
 
-        # log
-        print(f"aSet: {aSet} | bSet: {bSet}")
+            # z
+            minZ = np.amin(rootList)
+            maxZ = np.amax(rootList)
 
-        # parameters A,B
-        A = self.eos_A(aSet)
-        B = self.eos_B(bSet)
-        print(f"A: {A} | B: {B}")
+            # molar-volume [m3/mol]
+            # -> all
+            molarVolumes = self.molarVolume(rootList)
+            # -> liquid
+            molarVolumeLiquid = self.molarVolume(minZ)
+            # -> gas
+            molarVolumeGas = self.molarVolume(maxZ)
 
-        # build polynomial eos equation f(Z)
-        alpha = self.eos_alpha(B)
-        beta = self.eos_beta(A, B)
-        gamma = self.eos_gamma(A, B)
-        print(f"alpha: {alpha} | beta: {beta} | gamma: {gamma}")
+            # molar-volume fraction
+            molarVolume = {
+                "molar-volumes": molarVolumes*np.array(self.moleFraction),
+                "gas": molarVolumeGas*np.array(self.moleFraction),
+                "liquid": molarVolumeLiquid*np.array(self.moleFraction),
+                "Z": rootList
+            }
 
-        # find f(Z) root
-        rootList = self.findRootfZ(alpha, beta, gamma)
-        print(f"rootList: {rootList}")
+            return molarVolume
 
-        # z
-        minZ = np.amin(rootList)
-        maxZ = np.amax(rootList)
-
-        # molar volume [cm3/gmol]
-        # -> liquid
-        molarVolumeLiquid = self.molarVolume(minZ)
-        print(f"molarVolumeLiquid {molarVolumeLiquid}")
-        # -> gas
-        molarVolumeGas = self.molarVolume(maxZ)
-        print(f"molarVolumeGas {molarVolumeGas}")
-
-        # molar volume fraction
-        molarVolume = {
-            "gas": self.sortRootfZ(molarVolumeGas*np.array(self.moleFraction)),
-            "liquid": self.sortRootfZ(molarVolumeLiquid*np.array(self.moleFraction))
-        }
-
-        return molarVolume
-
-    # a
-    def pengRobinson_a(self, Pc, Tc, w) -> float:
-        k = 0.37464 + 1.54226 * w - 0.26993 * math.pow(w, 2)
-        alpha = math.pow(1 + k * (1 - math.sqrt(self.T / Tc)), 2)
-        ac = (0.45723553 * (math.pow(CONST.R_CONST, 2) * math.pow(Tc, 2))) / Pc
-        res = ac*alpha
-        return res
-
-    # b
-    def pengRobinson_b(self, Pc, Tc) -> float:
-        res = (0.07779607 * CONST.R_CONST * Tc) / Pc
-        return res
-
-
-# main
-if __name__ == "__main__":
-    eosCoreClass().classDes()
+        except Exception as e:
+            raise Exception(e)
