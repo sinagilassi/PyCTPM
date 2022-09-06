@@ -9,6 +9,7 @@ import PyCTPM.core.constants as CONST
 from PyCTPM.core import packageName, loadAllData, loadGeneralDataV1, \
     loadGeneralDataInfo, loadGeneralDataV2, checkUnitGeneralData, loadDataEOS
 from PyCTPM.docs import ExtCoreClass, eosCoreClass, dUtilityClass
+from PyCTPM.docs.fugacity import FugacityClass
 
 
 def main():
@@ -94,8 +95,14 @@ def eos(modelInput):
             unit: set unit (SI: default, cgs)
 
     output:
-        z: list of compressibility factor
-        Vm: list of molar volume [m^3/mol]
+        pressure: fixed pressure [Pa]
+        temperature: fixed temperature [K]
+        molar-volumes: for all Z [m^3/mol]
+        gas: for the highest Z [m^3/mol]
+        liquid: for the lowest Z [m^3/mol]
+        Z: compressibility coefficient [-]
+        eos-params: a,b,A,B,alpha,beta,gamma
+
     """
     # get primary info
     compList = modelInput.get("components")
@@ -140,10 +147,49 @@ def fugacity(modelInput):
             unit: set unit (SI: default, cgs)  
     '''
     try:
-        # find Z and molar volume
-        eosRes = eos(modelInput)
+        # get primary info
+        compList = modelInput.get("components")
+        # eos method
+        eosModel = modelInput.get('eos-model')
+        # phase
+        phase = modelInput.get("phase")
+        # ole fraction
+        moleFraction = modelInput.get('MoFr', 1)
+        # params
+        params = modelInput.get('params')
+
+        # check component list
+        compListUnique = dUtilityClass.buildComponentList(compList)
+
+        # load all data
+        compData = loadDataEOS(compListUnique)
+
+        # * init eos class
+        _eosCoreClass = eosCoreClass(
+            compData, compList, eosModel, moleFraction, params)
+
+        # select method
+        selectEOS = {
+            "PR": lambda: _eosCoreClass._eosPR()
+        }
+        # res
+        _eosRes = selectEOS.get(eosModel)()
+
+        # * init fugacity class
+        _fugacityClass = FugacityClass(compData, compList, _eosRes, phase)
+
+        # select method
+        selectFugacity = {
+            "PR": lambda: _fugacityClass.FugacityPR()
+        }
+
+        # res
+        _fugacityRes = selectFugacity.get(eosModel)()
+
+        # return
+        return _fugacityRes
     except Exception as e:
-        raise
+        raise Exception("Fugacity calculation failed!, ", e)
 
 
 #! test json

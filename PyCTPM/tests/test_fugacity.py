@@ -1,5 +1,5 @@
-# CALCULATE GAS DIFFUSIVITY
-# ---------------------------
+# CALCULATE FUGACITY
+# -------------------
 
 # import module/package
 # externals
@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 # import package/module
 import PyCTPM
 from PyCTPM import eos
+from PyCTPM.ctpm import fugacity
 
 # model input
 # eos model
@@ -17,15 +18,15 @@ eosModel = 'PR'
 phase = "gas"
 
 # component list
-compList = ["C5H12"]
+compList = ["H2O"]
 
 # mole fraction
 MoFri = []
 
 # temperature [K]
-T = 373.15
+T = 200 + 273.15
 # pressure [Pa]
-P = 1e5
+P = 15.55*1e5
 
 # model input
 modelInput = {
@@ -41,6 +42,6 @@ modelInput = {
 }
 
 # eos
-res = eos(modelInput)
+res = fugacity(modelInput)
 # log
 print("res: ", res)

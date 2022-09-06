@@ -4,7 +4,7 @@
 # import packages/modules
 import numpy as np
 import re
-from math import sqrt
+from math import sqrt, exp, pow
 # internals
 from PyCTPM.core import Tref, R_CONST
 
@@ -709,6 +709,73 @@ def calMixturePropertyM1(params):
         return mixPropVal
     except Exception as e:
         print(e)
+
+# NOTE
+# vapour pressure
+
+
+def calVapourPressureEq1(params, T):
+    '''
+    Antoine Equation for Vapor Pressures of Pure Species
+
+    args:
+        params: Antoine equation params:
+            A
+            B
+            C
+        T: temperature [K] - converted to C
+
+    output:
+        res: vapour pressure [Pa]
+    '''
+    # try/except
+    try:
+        A = float(params[0])
+        B = float(params[1])
+        C = float(params[2])
+        # convert to C
+        T_unit = T - 273.15
+        # vapour pressure [kPa]
+        res = exp(A - (B/(T_unit+C)))
+
+        # res
+        return res*1e3
+    except Exception as e:
+        raise
+
+
+def calVapourPressure():
+    pass
+
+
+def calMolarVolume(P, T, Z):
+    '''
+    calculate molar-volume [m^3/mol]
+
+    args:
+        Z: compressibility factor [-]
+
+    P: pressure [Pa]
+    T: temperature [K]
+    R: universal gas constant [J/mol.K]
+
+    output:
+        Vm: molar volume [m^3/mol]
+    '''
+    return Z * ((R_CONST * T) / P)
+
+
+def RackettEquation(Vc, Zc, Tr):
+    '''
+    estimation of saturated liquid volume
+
+    args:
+        Vc: critical molar-volume
+        Zc: critical compressibility factor
+        Tr: reduced temperature
+    '''
+    _ZcPower = pow(1-Tr, 0.2857)
+    return Vc*pow(Zc, _ZcPower)
 
 
 if __name__ == "__main__":

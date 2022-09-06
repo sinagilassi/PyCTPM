@@ -17,15 +17,15 @@ eosModel = 'PR'
 phase = "gas"
 
 # component list
-compList = ["C5H12"]
+compList = ["C2H2"]
 
 # mole fraction
 MoFri = []
 
 # temperature [K]
-T = 373.15
+T = 250
 # pressure [Pa]
-P = 1e5
+P = 10*1e5
 
 # model input
 modelInput = {
