@@ -1,4 +1,4 @@
-no,component-name,component-symbol,phase,MW,Tc,Pc,w,dHf25,dGf25,Zc,Vc
+no,component-name,component-symbol,state,MW,Tc,Pc,w,dHf25,dGf25,Zc,Vc
 -,-,-,-,g/mol,K,bar,-,kJ/mol,kJ/mol,-,cm^3/mol
 1,hydrogen,H2,g,2.016,32.97,12.93,-0.216,0,0,0.303,64.3
 2,carbon-dioxide,CO2,g,44.009,304.12,73.9,0.239,-393.51,-394.6,0.274,93.9
@@ -15,3 +15,5 @@ no,component-name,component-symbol,phase,MW,Tc,Pc,w,dHf25,dGf25,Zc,Vc
 13,acetylene,C2H2,g,26.04,309.4278,62.43202717,0.19,227.4,209.879,0.274,112.7
 14,n-Pentane,C5H12,l,72.15,469.7,33.7,0.251,-146.8,-8.7,0.262,304
 15,argon,Ar,g,39.948,150.8,48.7,-0.004,0,0,0.291,74.9
+16,benzene,C6H6,l,78.11,562.1,48.9,0.212,49.1,124.5,0.271009814,259
+17,benzene,C6H6,g,78.11,562.1,48.9,0.212,82.9,129.7,0.271009814,259

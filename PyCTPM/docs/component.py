@@ -42,12 +42,14 @@ class Component:
     _w = 0
     _dHf25 = 0
     _dGf25 = 0
+    _state = "g"
 
     # ! calculated
     _T_Tc_ratio = 0
 
-    def __init__(self, id):
+    def __init__(self, id, state):
         self.id = str(id)
+        self.state = state
         # * load data
         self.thermoPropData = self.__loadComponentData()
         # * set data
@@ -157,7 +159,7 @@ class Component:
 
             if isinstance(compId, str):
                 # property list
-                propList = loadGeneralDataV3([self.id])
+                propList = loadGeneralDataV3([self.id], [self.state])
                 # res
                 return propList
 

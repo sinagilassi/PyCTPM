@@ -9,12 +9,12 @@ from PyCTPM import component
 eosModel = 'PR'
 
 # temperature [K]
-T = 275
+T = 373.15
 # pressure [Pa]
-P = 10*1e5
+P = 50*1e5
 
 # define a molecule
-comp1 = component("CO2")
+comp1 = component("C6H6", "g")
 
 # molecular weight
 # print(comp1.MW)

@@ -181,12 +181,13 @@ def loadGeneralDataV2(compList):
         raise
 
 
-def loadGeneralDataV3(compList):
+def loadGeneralDataV3(compList, state):
     '''
     load general data of components
 
     args:
         compList: component list
+        state: component state (g,l,aq)
 
     output:
         dict of list of thermodynamic data 
@@ -226,9 +227,9 @@ def loadGeneralDataV3(compList):
             compData.append(row)
 
         # find compo index in data comp
-        for i in compList:
+        for i in enumerate(zip(compList, state)):
             _loop1 = [j for j, item in enumerate(
-                compData) if i in item.values()]
+                compData) if i[0] in item.values()]
             compDataIndex.append(_loop1[0])
 
         # select

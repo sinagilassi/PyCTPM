@@ -20,7 +20,7 @@ def main():
     print(packageName)
 
 
-def component(id):
+def component(id, state='g'):
     '''
     define a component (molecule/electrolyte)
 
@@ -31,7 +31,7 @@ def component(id):
         component object
     '''
     try:
-        return Component(id)
+        return Component(id, state)
     except Exception as e:
         raise Exception('define component failed!, ', e)
 
