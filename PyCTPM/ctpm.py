@@ -10,6 +10,7 @@ from PyCTPM.core import packageName, loadAllData, loadGeneralDataV1, \
     loadGeneralDataInfo, loadGeneralDataV2, checkUnitGeneralData, loadDataEOS
 from PyCTPM.docs import ExtCoreClass, eosCoreClass, dUtilityClass
 from PyCTPM.docs.fugacity import FugacityClass
+from PyCTPM.docs import Component
 
 
 def main():
@@ -17,6 +18,22 @@ def main():
     Python Chemical Thermodynamics for Process Modeling
     """
     print(packageName)
+
+
+def component(id):
+    '''
+    define a component (molecule/electrolyte)
+
+    args:
+        id: symbol, name
+
+    return:
+        component object
+    '''
+    try:
+        return Component(id)
+    except Exception as e:
+        raise Exception('define component failed!, ', e)
 
 
 def thermo(propName, modelInput, unit="SI"):

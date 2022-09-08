@@ -181,6 +181,70 @@ def loadGeneralDataV2(compList):
         raise
 
 
+def loadGeneralDataV3(compList):
+    '''
+    load general data of components
+
+    args:
+        compList: component list
+
+    output:
+        dict of list of thermodynamic data 
+    '''
+    try:
+        # data path
+        # dataMainDir = packageShortName + '\database'
+        # dataFile = DATABASE_INFO[0]['file']
+        # dataPath = os.path.join(dataMainDir, dataFile)
+
+        # data file
+        dataFile = DATABASE_INFO[0]['file']
+        # abs path
+        pathAbs = os.path.abspath(os.path.dirname(__file__))
+        # relative path to database file
+        dataPathDirRel = '../' + DATABASE_FOLDER_NAME
+        # database file
+        dataPath = os.path.join(pathAbs, dataPathDirRel, dataFile)
+
+        csv.register_dialect('myDialect', delimiter=',',
+                             skipinitialspace=True, quoting=csv.QUOTE_MINIMAL)
+
+        # component data
+        compData = []
+        compDataIndex = []
+        compDataSelected = []
+        compDataSelectedDict = {}
+
+        file = open(dataPath, 'r')
+        reader = csv.DictReader(file)
+
+        # skip unit row
+        next(reader, None)
+
+        # convert to dict
+        for row in reader:
+            compData.append(row)
+
+        # find compo index in data comp
+        for i in compList:
+            _loop1 = [j for j, item in enumerate(
+                compData) if i in item.values()]
+            compDataIndex.append(_loop1[0])
+
+        # select
+        for j in compDataIndex:
+            compDataSelected.append(compData[j])
+
+        #! check
+        if len(compDataSelected) == 1:
+            return compDataSelected[0]
+        else:
+            raise Exception("component not found!")
+
+    except Exception as e:
+        raise
+
+
 def loadGeneralDataInfo():
     '''
     load info of the general data of components

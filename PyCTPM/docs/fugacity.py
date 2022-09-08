@@ -16,15 +16,16 @@ class FugacityClass:
     for a liquid phase, the Poynting correction factor is used 
     '''
 
-    def __init__(self, compData, components, eosRes, phase='gas'):
+    def __init__(self, compData, components, eosRes, params, phase='gas'):
         self.compData = compData
         self.components = components
         self.eosRes = eosRes
         self.phase = phase
+        self.P = params.get("pressure", 0)
+        self.T = params.get("temperature", 0)
         # set
-        self.P = eosRes.get("pressure", 0)
-        self.T = eosRes.get("temperature", 0)
         self.Z = eosRes.get("Z")
+        self.T_Tc_Ratio = eosRes.get("T_Tc_ratio")
         self.componentsNo = len(self.components)
 
     def FugacityPR(self):
@@ -61,9 +62,9 @@ class FugacityClass:
             B = eosParams.get("B")
 
             # fugacity coefficient
-            phi0 = (Z-1) - math.log(Z-B) - (A/(2*B*math.sqrt(2))) * \
-                math.log((Z+(1+math.sqrt(2))*B)/(Z+(1-math.sqrt(2))*B))
-            phi = math.exp(phi0)
+            phi0 = (Z-1) - np.log(Z-B) - (A/(2*B*np.sqrt(2))) * \
+                np.log((Z+(1+np.sqrt(2))*B)/(Z+(1-np.sqrt(2))*B))
+            phi = np.exp(phi0)
 
             # res
             return phi
@@ -73,10 +74,14 @@ class FugacityClass:
     def _gasFugacityPR(self):
         '''
         estimation of gas fugacity using a EOS
+
+        return:
+            fugacity
+            fugacity coefficient
         '''
         try:
             # Z (the highest value)
-            Z = np.amax(self.Z)
+            Z = self.Z  # np.amax(self.Z)
 
             # calculate fugacity coefficient
             _fugCoefficient = self._eqPR(Z)
@@ -84,7 +89,7 @@ class FugacityClass:
             fugacity = _fugCoefficient*self.P
 
             # return
-            return fugacity
+            return fugacity, _fugCoefficient, self.T_Tc_Ratio
 
         except Exception as e:
             raise Exception("Gas fugacity failed!, ", e)

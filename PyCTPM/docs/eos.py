@@ -115,6 +115,14 @@ class eosClass:
 
     # find fZ root
     def findRootfZ(self, alpha, beta, gamma):
+        '''
+        roots 
+
+            1. P=P*, 3 real roots
+            2. T<Tc, P>P*, 1 real root (liquid)
+            3. T<Tc, P<P*, 1 real root (superheated vapor)
+            4. T>Tc, 1 real root (supercritical fluid varies between `vapor-like` and `liquid-like`)
+        '''
         # vars
         data = (alpha, beta, gamma)
         #
