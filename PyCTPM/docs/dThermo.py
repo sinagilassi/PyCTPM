@@ -778,5 +778,37 @@ def RackettEquation(Vc, Zc, Tr):
     return Vc*pow(Zc, _ZcPower)
 
 
+def calAcentricFactor():
+    pass
+
+
+def calVaporPressureV1():
+    '''
+    calculate vapor pressure using the clasusius-clapeyron equation
+    '''
+    pass
+
+
+def calVaporPressureV2():
+    '''
+    calculate vapor pressure using the shortcut equation
+    '''
+    pass
+
+
+def SetPhase(state):
+    '''
+    set phase 
+    '''
+    # define phase
+    _phaseSelection = {
+        "l": "liquid",
+        "g": "gas",
+        "s": "solid"
+    }
+
+    return _phaseSelection.get(state)
+
+
 if __name__ == "__main__":
     main()

@@ -229,8 +229,14 @@ def loadGeneralDataV3(compList, state):
         # find compo index in data comp
         for i in enumerate(zip(compList, state)):
             _loop1 = [j for j, item in enumerate(
-                compData) if i[0] in item.values()]
-            compDataIndex.append(_loop1[0])
+                compData) if i[1][0] in item.values() and i[1][1] == str(item['state'])]
+            #! check
+            if len(_loop1) > 0:
+                compDataIndex.append(_loop1[0])
+            else:
+                print('the component is not available in the database!')
+                raise Exception(
+                    'the component is not available in the database!')
 
         # select
         for j in compDataIndex:

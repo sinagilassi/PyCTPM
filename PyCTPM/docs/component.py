@@ -10,6 +10,7 @@ from PyCTPM.core.package import PackInfo
 from PyCTPM.core.utilities import loadGeneralDataV2, loadGeneralDataV3
 from PyCTPM.docs.eosCore import eosCoreClass
 from PyCTPM.docs.fugacity import FugacityClass
+from PyCTPM.docs.dThermo import SetPhase, calMolarVolume
 
 
 class Component:
@@ -212,6 +213,44 @@ class Component:
         '''
         return T/self.Tc
 
+    def compressibility_factor(self, P, T, eos_model='PR'):
+        '''
+        find the roots of Z=f(P,T)
+
+        args:
+            P: pressure [Pa]
+            T: temperature [K]
+            eos_model: name of eos model
+                1. van der Waals (VW)
+                2. Redlich-Kwong and Soave (RKS)
+                3. Peng-Robinson (PR)
+
+        return:
+            Z: compressibility coefficient [-]
+            eos-params: a,b,A,B,alpha,beta,gamma
+        '''
+        try:
+            # eos params
+            params = {
+                "pressure": P,
+                "temperature": T
+            }
+
+            # * init eos class
+            _eosCoreClass = eosCoreClass(
+                [self.thermoPropData], [self.symbol], eos_model, [1], params)
+
+            # * select method
+            selectEOS = {
+                "PR": lambda: _eosCoreClass._eosPR(),
+                "VW": 1,
+                "RKS": 1
+            }
+
+            return selectEOS.get(eos_model)()
+        except Exception as e:
+            raise Exception("compressibility factor failed!")
+
     def molar_volume(self, P, T, eos_model='PR'):
         '''
         estimate molar-volume at specified pressure and temperature
@@ -226,37 +265,30 @@ class Component:
 
         return:
             Vms: molar-volume list for all Z [m^3/mol]
-            Vmg: for the highest Z [m^3/mol]
-            Vml: for the lowest Z [m^3/mol]
             Z: compressibility coefficient [-]
-            P: fixed pressure [Pa]
-            T: fixed temperature [K]
             eos-params: a,b,A,B,alpha,beta,gamma
         '''
         try:
-            # eos params
-            params = {
-                "pressure": P,
-                "temperature": T
-            }
+            # eos
+            eosRes = self.compressibility_factor(P, T, eos_model)
+            # ->
+            Zs = eosRes['Zs']
 
-            # * init eos class
-            _eosCoreClass = eosCoreClass(
-                [self.thermoPropData], [self.symbol], eos_model, [1], params)
+            # check Zs
+            if self.state == 'g':
+                Z = np.amax(Zs)
+            elif self.state == 'l':
+                Z = np.amin(Zs)
 
-            # select method
-            selectEOS = {
-                "PR": lambda: _eosCoreClass._eosPR(),
-                "VW": 1,
-                "RKS": 1
-            }
+            # res
+            res = calMolarVolume(P, T, Z)
 
-            return selectEOS.get(eos_model)()
+            return res, eosRes
 
         except Exception as e:
             raise Exception("fugacity failed!")
 
-    def fugacity(self, P, T, eos_model='PR', phase='gas'):
+    def fugacity(self, P, T, eos_model='PR', pressure_correction=False):
         '''
         estimate fugacity at specified pressure and temperature
 
@@ -267,52 +299,63 @@ class Component:
                 1. van der Waals (VW)
                 2. Redlich-Kwong and Soave (RKS)
                 3. Peng-Robinson (PR)
-            phase: component phase (solid/liquid/gas)
+            pressure_correction: estimate liquid fugacity with:
+                1. equation of state (default)
+                2. the Poynting equation
 
         return:
             f: fugacity [Pa]
             phi: fugacity coefficient [-]
         '''
         try:
+            # T/Tc ratio
+            T_Tc_ratio = T/self.Tc
+            # P/Pc ratio
+            P_Pc_ratio = P/self.Pc
+
             # eos params
             params = {
                 "pressure": P,
-                "temperature": T
+                "temperature": T,
+                "pressure_correction": pressure_correction,
+                "T_Tc_ratio": T_Tc_ratio,
+                "P_Pc_ratio": P_Pc_ratio
             }
 
-            # * init eos class
-            _eosCoreClass = eosCoreClass(
-                [self.thermoPropData], [self.symbol], eos_model, [1], params)
+            # phase
+            phase = SetPhase(self.state)
 
-            # select method
-            selectEOS = {
-                "PR": lambda: _eosCoreClass._eosPR(),
-                "VW": 1,
-                "RKS": 1
-            }
+            # ! check
+            if pressure_correction == True:
+                # vapor-pressure [Pa]
+                vaporPressure = 1
 
-            _eosRes = selectEOS.get(eos_model)()
+                # eos calculation
+                _eosRes = self.molar_volume(vaporPressure, T, eos_model)
 
-            _eosResSet = {
-                "molar-volumes": _eosRes[0],
-                "Z": _eosRes[1],
-                "eos-params": _eosRes[2],
-                "T_Tc_ratio": _eosRes[3],
-            }
+            else:
+                # eos calculation
+                _eosRes = self.molar_volume(P, T, eos_model)
 
-            # * init fugacity class
-            _fugacityClass = FugacityClass([self.thermoPropData], [
-                                           self.symbol], _eosResSet, params, phase)
+                _eosResSet = {
+                    "molar-volumes": _eosRes[0],
+                    "Zs": _eosRes[1],
+                    "eos-params": _eosRes[2],
+                }
 
-            # select method
-            selectFugacity = {
-                "PR": lambda: _fugacityClass.FugacityPR(),
-                "VW": 1,
-                "RKS": 1
-            }
+                # * init fugacity class
+                _fugacityClass = FugacityClass([self.thermoPropData], [
+                    self.symbol], _eosResSet, params)
 
-            # res
-            _fugacityRes = selectFugacity.get(eos_model)()
+                # select method
+                selectFugacity = {
+                    "PR": _fugacityClass.FugacityPR,
+                    "VW": 1,
+                    "RKS": 1
+                }
+
+                # res
+                _fugacityRes = selectFugacity.get(eos_model)(phase)
 
             # return
             return _fugacityRes

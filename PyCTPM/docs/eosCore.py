@@ -38,11 +38,6 @@ class eosCoreClass(eosClass):
 
         output:
             res:
-                pressure: fixed pressure [Pa]
-                temperature: fixed temperature [K]
-                molar-volumes: for all Z [m^3/mol]
-                gas: for the highest Z [m^3/mol]
-                liquid: for the lowest Z [m^3/mol]
                 Z: compressibility coefficient [-]
                 eos-params: a,b,A,B,alpha,beta,gamma
         '''
@@ -118,28 +113,25 @@ class eosCoreClass(eosClass):
             minZ = np.amin(rootList)
             maxZ = np.amax(rootList)
 
-            # molar-volume [m3/mol]
-            # -> all
-            molarVolumes = np.sort(self.molarVolume(rootList))
-            # -> liquid
-            molarVolumeLiquid = self.molarVolume(minZ)
-            # -> gas
-            molarVolumeGas = self.molarVolume(maxZ)
+            # # molar-volume [m3/mol]
+            # # -> all
+            # molarVolumes = np.sort(self.molarVolume(rootList))
+            # # -> liquid
+            # molarVolumeLiquid = self.molarVolume(minZ)
+            # # -> gas
+            # molarVolumeGas = self.molarVolume(maxZ)
 
             # REVIEW
             # calculate specific volume [m^3/kg]
             # res
             res = {
-                "pressure": self.P,
-                "temperature": self.T,
-                "molar-volumes": molarVolumes,
-                "gas": molarVolumeGas,
-                "liquid": molarVolumeLiquid,
-                "Z": rootList,
+                "Zs": rootList,
                 "eos-params": esoParams,
+                "pressure": self.P,
+                "temperature": self.T
             }
 
-            return molarVolumes, rootList, esoParams, T_Tc_ratio
+            return res
 
         except Exception as e:
             raise Exception(e)

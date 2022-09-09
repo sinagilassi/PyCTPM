@@ -33,7 +33,7 @@ def component(id, state='g'):
     try:
         return Component(id, state)
     except Exception as e:
-        raise Exception('define component failed!, ', e)
+        raise Exception('define component object failed!, ', e)
 
 
 def thermo(propName, modelInput, unit="SI"):

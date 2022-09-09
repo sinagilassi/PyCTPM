@@ -7,40 +7,40 @@ import math
 # local
 from PyCTPM.core import Tref, R_CONST
 from PyCTPM.docs.dThermo import RackettEquation
+from PyCTPM.docs.eosCore import eosCoreClass
 
 
-class FugacityClass:
+class FugacityClass():
     '''
     # Fugacity calculation in gas, liquid, and solid phases using an EOS
 
     for a liquid phase, the Poynting correction factor is used 
     '''
 
-    def __init__(self, compData, components, eosRes, params, phase='gas'):
+    def __init__(self, compData, components, eosRes, params):
         self.compData = compData
         self.components = components
         self.eosRes = eosRes
-        self.phase = phase
+        # set
         self.P = params.get("pressure", 0)
         self.T = params.get("temperature", 0)
-        # set
-        self.Z = eosRes.get("Z")
-        self.T_Tc_Ratio = eosRes.get("T_Tc_ratio")
+        self.Zs = eosRes.get("Zs")
+        # comp no
         self.componentsNo = len(self.components)
 
-    def FugacityPR(self):
+    def FugacityPR(self, phase):
         '''
         set fugacity equation based on a phase (gas/liquid/solid)
         '''
         try:
             # phase equation selection
             phaseEqSelection = {
-                'gas': lambda: self._gasFugacityPR(),
-                'liquid': lambda: self._liquidFugacityPR()
+                'gas': lambda x: self._glFugacityPR(x),
+                'liquid': lambda x: self._glFugacityPR(x)
             }
 
             # set
-            res = phaseEqSelection.get(self.phase)()
+            res = phaseEqSelection.get(phase)()
 
             # res
             return res
@@ -71,17 +71,22 @@ class FugacityClass:
         except Exception as e:
             raise Exception("PR fugacity failed! ", e)
 
-    def _gasFugacityPR(self):
+    def _glFugacityPR(self, phase):
         '''
-        estimation of gas fugacity using a EOS
+        estimation of gas/liquid fugacity using a EOS
 
         return:
             fugacity
             fugacity coefficient
         '''
         try:
-            # Z (the highest value)
-            Z = self.Z  # np.amax(self.Z)
+            # check
+            if phase == 'gas':
+                # Z (the highest value)
+                Z = np.amax(self.Z)
+            else:
+                # Z (the lowest value)
+                Z = np.amin(self.Z)
 
             # calculate fugacity coefficient
             _fugCoefficient = self._eqPR(Z)
@@ -89,12 +94,12 @@ class FugacityClass:
             fugacity = _fugCoefficient*self.P
 
             # return
-            return fugacity, _fugCoefficient, self.T_Tc_Ratio
+            return fugacity, _fugCoefficient
 
         except Exception as e:
             raise Exception("Gas fugacity failed!, ", e)
 
-    def _liquidFugacityPR(self, mode=True, vapor_pressure=1):
+    def liquidFugacity(self):
         '''
         estimation of liquid fugacity using a EOS
 
@@ -113,19 +118,17 @@ class FugacityClass:
 
                 as liquids are fairly incompressible for Tr<0.9, the molar-volume is assumed to be constant
 
-        args:
-            mode: Poynting equation is chosen (default=True)
+        hint:
+            mode: 
+                Poynting equation is not chosen
+                equation of state is used (default=False)
             vapor_pressure: vapor pressure at which saturated fugacity is calculated for Poynting equation
         '''
         try:
             # check mode
             # -> use poynting equation to modify fugacity
-            if mode is True:
-                # Z (the highest value)
-                Z = np.amax(self.Z)
-            else:
-                # Z (the lowest value)
-                Z = np.amin(self.Z)
+            # Z (the highest value)
+            Z = np.amax(self.Z)
 
             # calculate fugacity coefficient
             _fugCoefficient = self._eqPR(Z)
@@ -133,13 +136,16 @@ class FugacityClass:
             fugacity = _fugCoefficient*self.P
 
             # check mode
-            if mode is True:
+            if self.pressure_correction is True:
                 # critical molar-volume [m^3/mol]
                 Vc = self.calCriticalMolarVolume()
 
                 # saturated molar-volume [m^3/mol]
                 # -> Rackett equation
                 Vsat = self.calSaturatedLiquidVolume(Vc)
+
+                # calculate vapor-pressure
+                vapor_pressure = 1
 
                 # saturated fugacity
                 fugacitySat = _fugCoefficient*vapor_pressure
