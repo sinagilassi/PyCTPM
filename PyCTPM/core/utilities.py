@@ -447,13 +447,16 @@ def loadAllData(compList):
         _d3 = csvLoaderV2(compList, DATABASE_INFO[2]['file'], 1)
         # load viscosity
         _d4 = csvLoaderV2(compList, DATABASE_INFO[3]['file'], 1)
+        # load vapor-pressure
+        _d5 = csvLoaderV2(compList, DATABASE_INFO[4]['file'], 1)
 
         # data
         databaseSet = {
             DATABASE_INFO[0]['name']: _d1,
             DATABASE_INFO[1]['name']: _d2,
             DATABASE_INFO[2]['name']: _d3,
-            DATABASE_INFO[3]['name']: _d4
+            DATABASE_INFO[3]['name']: _d4,
+            DATABASE_INFO[4]['name']: _d5,
         }
         # return
         return databaseSet

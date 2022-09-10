@@ -723,29 +723,87 @@ def calVapourPressureEq1(params, T):
             A
             B
             C
-        T: temperature [K] - converted to C
+        T: temperature [K]
 
     output:
-        res: vapour pressure [Pa]
+        res: vapour pressure [Pa] - needs conversion from bar to Pa
     '''
     # try/except
     try:
         A = float(params[0])
         B = float(params[1])
         C = float(params[2])
-        # convert to C
-        T_unit = T - 273.15
+
         # vapour pressure [kPa]
-        res = exp(A - (B/(T_unit+C)))
+        res = exp(A - (B/(T+C)))
 
         # res
-        return res*1e3
+        return res*1e5
     except Exception as e:
         raise
 
 
-def calVapourPressure():
-    pass
+def calVapourPressure(comList, T, loadData):
+    """
+        calculate vapor pressure of pure component [Pa]
+
+        args:
+            comList: component name list (symbol)
+            T: temperature [K]
+            loadData: database
+    """
+    # try/except
+    try:
+        # res
+        _Vp = []
+
+        # load data
+
+        for i in comList:
+            # get id
+            eqIdData = [item['id']
+                        for item in loadData if i == item['component-symbol']]
+            # get eq parameters
+            eqData = [{"eqParams": [item['A'], item['B'], item['C']], "eqExpr": item['expr']}
+                      for item in loadData if i == item['component-symbol']]
+            # check
+            _eqLen = len(eqIdData) + len(eqData)
+            if _eqLen > 0:
+                _eqIdSet = eqIdData[0]
+                _eqData = eqData[0]
+                if _eqIdSet == "eq1":
+                    # REVIEW
+                    # eq1
+                    _eqParams = _eqData.get('eqParams')
+                    _eqExpr = _eqData.get('eqExpr')
+                    _res = calVapourPressureEq1(_eqParams, T)
+                    _Vp.append(_res)
+                elif _eqIdSet == "eq2":
+                    # REVIEW
+                    # eq2
+                    # _eqExpr = _eqData.get('eqExpr')
+                    # build fun
+                    # _res = calGasVisEq2(_eqExpr, T)
+                    # _Vp.append(_res)
+                    pass
+                else:
+                    print('viscosity data not found, update app database!')
+                    raise
+            else:
+                print("component not found, update the app database!")
+                raise
+
+        # convert to numpy array
+        Vp = np.array(_Vp)
+
+        # ! check
+        if Vp.size == 1:
+            return Vp[0]
+        else:
+            return Vp
+
+    except Exception as e:
+        print(e)
 
 
 def calMolarVolume(P, T, Z):

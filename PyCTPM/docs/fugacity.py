@@ -24,7 +24,8 @@ class FugacityClass():
         # set
         self.P = params.get("pressure", 0)
         self.T = params.get("temperature", 0)
-        self.Zs = eosRes.get("Zs")
+        self.Zs = eosRes.get("eos-res")['Zs']
+        self.vaporPressure = eosRes.get("vapor-pressure", 0)
         # comp no
         self.componentsNo = len(self.components)
 
@@ -56,7 +57,7 @@ class FugacityClass():
         '''
         try:
             # set
-            eosParams = self.eosRes.get("eos-params", 0)
+            eosParams = self.eosRes.get("eos-res")['eos-params']
             # A/B
             A = eosParams.get("A")
             B = eosParams.get("B")
@@ -83,10 +84,10 @@ class FugacityClass():
             # check
             if phase == 'gas':
                 # Z (the highest value)
-                Z = np.amax(self.Z)
-            else:
+                Z = np.amax(self.Zs)
+            elif phase == 'liquid':
                 # Z (the lowest value)
-                Z = np.amin(self.Z)
+                Z = np.amin(self.Zs)
 
             # calculate fugacity coefficient
             _fugCoefficient = self._eqPR(Z)
@@ -127,30 +128,24 @@ class FugacityClass():
         try:
             # check mode
             # -> use poynting equation to modify fugacity
-            # Z (the highest value)
-            Z = np.amax(self.Z)
+            # Z (the highest value for the vapor)
+            Z = np.amax(self.Zs)
 
-            # calculate fugacity coefficient
-            _fugCoefficient = self._eqPR(Z)
-            # fugacity
-            fugacity = _fugCoefficient*self.P
+            # calculate fugacity coefficient at saturated state
+            _fugCoefficientSaturated = self._eqPR(Z)
+            # fugacity at saturated state
+            fugacitySaturated = _fugCoefficientSaturated*self.vaporPressure
 
-            # check mode
-            if self.pressure_correction is True:
-                # critical molar-volume [m^3/mol]
-                Vc = self.calCriticalMolarVolume()
+            # critical molar-volume [m^3/mol]
+            Vc = self.calCriticalMolarVolume()
 
-                # saturated molar-volume [m^3/mol]
-                # -> Rackett equation
-                Vsat = self.calSaturatedLiquidVolume(Vc)
+            # saturated molar-volume [m^3/mol]
+            # -> Rackett equation
+            Vsat = self.calSaturatedLiquidVolume(Vc)
 
-                # calculate vapor-pressure
-                vapor_pressure = 1
-
-                # saturated fugacity
-                fugacitySat = _fugCoefficient*vapor_pressure
-                fugacity = fugacitySat * \
-                    np.exp(Vsat*(self.P - vapor_pressure)/(R_CONST*self.T))
+            # liquid fugacity
+            fugacity = fugacitySaturated * \
+                np.exp(Vsat*(self.P - self.vaporPressure)/(R_CONST*self.T))
 
             # return
             return fugacity
@@ -209,7 +204,7 @@ class FugacityClass():
                 # Pc,Tc,Zc
                 # item[0], item[1], item[2]
                 # Tr
-                _Tr = item[1]/self.T
+                _Tr = self.T/item[1]
                 # saturated molar-volume
                 Vsat[i] = RackettEquation(Vc[i], item[2], _Tr)
                 i += 1

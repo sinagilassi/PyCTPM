@@ -23,6 +23,10 @@ DATABASE_INFO = [
         "name": "VISCOSITY",
         "file": "data_viscosity.csv"
     },
+    {
+        "name": "VAPOR_PRESSURE",
+        "file": "data_vapor_pressure.csv"
+    }
 ]
 
 # general database info
