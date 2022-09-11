@@ -10,13 +10,13 @@ from PyCTPM import component
 eosModel = 'PR'
 
 # temperature [K]
-T = 200 + 275.15
+T = 111.407
 # pressure [Pa]
 P = 1*1e5
 Ps = np.array([1, 100, 1000])*1e5
 
 # define a molecule
-comp1 = component("H2O", "l")
+comp1 = component("CH4", "g")
 
 # molecular weight
 # print(comp1.MW)
@@ -28,7 +28,7 @@ comp1 = component("H2O", "l")
 # print(comp1.T_Tc_ratio(T))
 
 # vapor-pressure
-print(comp1.vapor_pressure(T))
+# print(comp1.vapor_pressure(T))
 
 
 # molar-volume [m^3/mol]
@@ -38,9 +38,8 @@ print(comp1.vapor_pressure(T))
 
 
 # fugacity [Pa] & fugacity coefficient
-# res2 = comp1.fugacity(P, T)
-# print("fugacity: ", res2[0])
-# print("fugacity coefficient: ", res2[1])
+res2 = comp1.fugacity(P, T)
+print("fugacity: ", res2[0])
 
 # for i in Ps:
 #     _res = comp1.fugacity(i, T)

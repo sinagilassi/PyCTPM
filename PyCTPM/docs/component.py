@@ -11,10 +11,11 @@ from PyCTPM.core.utilities import csvLoaderV2, loadGeneralDataV2, loadGeneralDat
 from PyCTPM.database.dataInfo import DATABASE_INFO
 from PyCTPM.docs.eosCore import eosCoreClass
 from PyCTPM.docs.fugacity import FugacityClass
+from PyCTPM.docs.equilibrium import EquilibriumClass
 from PyCTPM.docs.dThermo import SetPhase, calMolarVolume, calVapourPressure
 
 
-class Component:
+class Component(EquilibriumClass):
     '''
     component class defines a molecule/electrolyte which provide:
         1. chemical/physical properties
@@ -51,19 +52,30 @@ class Component:
     _Vp = 0
 
     # ! data
-    __vaporPressureData = []
+    # __vaporPressureData = []
 
     def __init__(self, id, state):
         self.id = str(id)
         self.state = state
+
         # * load data
         _loadData = self.__loadComponentData()
-        # -> general
-        self.thermoPropData = _loadData[0]
+        # -> thermo
+        self.thermoPropData = _loadData['thermo']
         # -> vapor-pressure
-        self.__vaporPressureData = _loadData[1]
+        # self.__vaporPressureData = _loadData['vapor-pressure']
         # * set data
         self.__setThermoProp()
+
+        # component
+        _components = {
+            'id': self.id,
+            'symbol': self.symbol,
+            'state': self.state
+        }
+
+        # classes
+        EquilibriumClass.__init__(self, _loadData, _components)
 
     # ! property list
 
@@ -174,7 +186,12 @@ class Component:
                 vaporPressureList = csvLoaderV2(
                     [self.id], DATABASE_INFO[4]['file'], 1)
                 # res
-                return propList, vaporPressureList
+                res = {
+                    'thermo': propList,
+                    'vapor-pressure': vaporPressureList
+                }
+
+                return res
 
             else:
                 raise Exception(
@@ -225,16 +242,18 @@ class Component:
         '''
         return T/self.Tc
 
-    def vapor_pressure(self, T):
+    def vapor_pressure(self, T, mode=1):
         '''
         calculate vapor pressure at T using:
             1. Antoine equation (eq1)
-
+            2. eos
         '''
         try:
-            return calVapourPressure([self.id], T, self.__vaporPressureData)
+            _res = self.vaporPressure(T, mode)
+
+            return _res
         except Exception as e:
-            raise Exception("vapor-pressure calculation failed!")
+            raise Exception("vapor-pressure calculation failed!, ", e)
 
     def compressibility_factor(self, P, T, eos_model='PR'):
         '''
@@ -253,24 +272,9 @@ class Component:
             eos-params: a,b,A,B,alpha,beta,gamma
         '''
         try:
-            # eos params
-            params = {
-                "pressure": P,
-                "temperature": T
-            }
+            _res = self.compressibilityFactor(P, T, eos_model)
 
-            # * init eos class
-            _eosCoreClass = eosCoreClass(
-                [self.thermoPropData], [self.symbol], eos_model, [1], params)
-
-            # * select method
-            selectEOS = {
-                "PR": lambda: _eosCoreClass._eosPR(),
-                "VW": 1,
-                "RKS": 1
-            }
-
-            return selectEOS.get(eos_model)()
+            return _res
         except Exception as e:
             raise Exception("compressibility factor failed!")
 
@@ -292,24 +296,12 @@ class Component:
             eos-params: a,b,A,B,alpha,beta,gamma
         '''
         try:
-            # eos
-            eosRes = self.compressibility_factor(P, T, eos_model)
-            # ->
-            Zs = eosRes['Zs']
+            _res = self.molarVolume(P, T, eos_model)
 
-            # check Zs
-            if self.state == 'g':
-                Z = np.amax(Zs)
-            elif self.state == 'l':
-                Z = np.amin(Zs)
-
-            # res
-            res = calMolarVolume(P, T, Z)
-
-            return res, eosRes
+            return _res
 
         except Exception as e:
-            raise Exception("fugacity failed!")
+            raise Exception("molar-volume failed!, ", e)
 
     def fugacity(self, P, T, eos_model='PR', pressure_correction=True):
         '''
@@ -331,69 +323,14 @@ class Component:
             phi: fugacity coefficient [-]
         '''
         try:
-            # T/Tc ratio
-            T_Tc_ratio = T/self.Tc
-            # P/Pc ratio
-            P_Pc_ratio = P/self.Pc
-
-            # eos params
-            params = {
-                "pressure": P,
-                "temperature": T,
-                "pressure_correction": pressure_correction,
-                "T_Tc_ratio": T_Tc_ratio,
-                "P_Pc_ratio": P_Pc_ratio
-            }
-
-            # phase
+            # set phase
             phase = SetPhase(self.state)
 
-            # ! check
-            if phase == 'liquid' and pressure_correction == True:
-                # vapor-pressure [Pa]
-                vaporPressure = self.vapor_pressure(T)
-
-                # eos calculation
-                _eosRes = self.molar_volume(vaporPressure, T, eos_model)
-
-                _eosResSet = {
-                    "molar-volumes": _eosRes[0],
-                    "eos-res": _eosRes[1],
-                    'vapor-pressure': vaporPressure
-                }
-
-                # * init fugacity class
-                _fugacityClass = FugacityClass([self.thermoPropData], [
-                    self.symbol], _eosResSet, params)
-
-                # res
-                _fugacityRes = _fugacityClass.liquidFugacity()
-
-            else:
-                # eos calculation
-                _eosRes = self.molar_volume(P, T, eos_model)
-
-                _eosResSet = {
-                    "molar-volumes": _eosRes[0],
-                    "eos-res": _eosRes[1],
-                }
-
-                # * init fugacity class
-                _fugacityClass = FugacityClass([self.thermoPropData], [
-                    self.symbol], _eosResSet, params)
-
-                # select method
-                selectFugacity = {
-                    "PR": _fugacityClass.FugacityPR,
-                    "VW": 1,
-                    "RKS": 1
-                }
-
-                # res
-                _fugacityRes = selectFugacity.get(eos_model)(phase)
+            _res = self.fugacities(
+                P, T, phase, eos_model, pressure_correction)
 
             # return
-            return _fugacityRes
+            return _res
 
         except Exception as e:
-            raise Exception("fugacity failed!")
+            raise Exception("fugacity failed!, ", e)

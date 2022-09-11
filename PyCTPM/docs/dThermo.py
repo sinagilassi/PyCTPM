@@ -762,7 +762,7 @@ def calVapourPressure(comList, T, loadData):
         for i in comList:
             # get id
             eqIdData = [item['id']
-                        for item in loadData if i == item['component-symbol']]
+                        for item in loadData if str(i) == item['component-symbol']]
             # get eq parameters
             eqData = [{"eqParams": [item['A'], item['B'], item['C']], "eqExpr": item['expr']}
                       for item in loadData if i == item['component-symbol']]
@@ -787,17 +787,17 @@ def calVapourPressure(comList, T, loadData):
                     # _Vp.append(_res)
                     pass
                 else:
-                    print('viscosity data not found, update app database!')
-                    raise
+                    print('data not found, update app database!')
+                    raise Exception()
             else:
                 print("component not found, update the app database!")
-                raise
+                raise Exception()
 
         # convert to numpy array
         Vp = np.array(_Vp)
 
         # ! check
-        if Vp.size == 1:
+        if len(comList) == 1:
             return Vp[0]
         else:
             return Vp

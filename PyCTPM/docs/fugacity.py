@@ -36,12 +36,12 @@ class FugacityClass():
         try:
             # phase equation selection
             phaseEqSelection = {
-                'gas': lambda x: self._glFugacityPR(x),
-                'liquid': lambda x: self._glFugacityPR(x)
+                'gas': self._glFugacityPR,
+                'liquid': self._glFugacityPR
             }
 
             # set
-            res = phaseEqSelection.get(phase)()
+            res = phaseEqSelection.get(phase)(phase)
 
             # res
             return res
@@ -214,3 +214,26 @@ class FugacityClass():
 
         except Exception as e:
             raise Exception("saturated liquid volume failed!")
+
+    def calVaporPressure(self):
+        '''
+        calculate vapor-pressure through optimization
+        '''
+        try:
+            # gas
+            gasFugacity, gasFugacityCoefficient = self._glFugacityPR('gas')
+            # liquid
+            liquidFugacity, liquidFugacityCoefficient = self._glFugacityPR(
+                'liquid')
+
+            # check
+            loss = gasFugacity - liquidFugacity
+
+            # res
+            return loss
+        except Exception as e:
+            raise Exception('vapor-pressure estimation failed!')
+
+    @classmethod
+    def __vaporPressureLoss(self):
+        pass
