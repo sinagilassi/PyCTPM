@@ -3,6 +3,8 @@
 
 # packages/modules
 import numpy as np
+from scipy import optimize
+# local
 from PyCTPM.docs.eosCore import eosCoreClass
 from PyCTPM.docs.fugacity import FugacityClass
 from PyCTPM.docs.dThermo import calMolarVolume, calVapourPressure
@@ -47,7 +49,7 @@ class EquilibriumClass:
             pass
         return
 
-    def vaporPressure(self, T, mode):
+    def vaporPressure(self, T, mode, eos_model):
         '''
         calculate vapor pressure at T using:
             1. Antoine equation (eq1)
@@ -62,32 +64,76 @@ class EquilibriumClass:
                 self.symbol, list) else self.symbol
 
             # check
-            if mode == 1:
+            if mode == 'antoine':
                 _Vp = calVapourPressure(
                     _symbol, T, self.__vaporPressureData)
-            elif mode == 2:
-                _Vp = 0
+            elif mode == 'eos':
+                _Vp = self.vaporPressureEOS(T, eos_model)
 
             # res
             return _Vp
         except Exception as e:
             raise Exception("vapor-pressure calculation failed!, ", e)
 
-    def vaporPressureEOS(self):
+    def vaporPressureEOS(self, T, eos_model):
         '''
         find vapor-pressure of a fluid using eos
         '''
         try:
-            print(0)
+            # set params
+            params = (T, eos_model)
+
+            # solver set
+            solverConfig = 1
+
+            # function set
+            funSet = self.vpEOS
+
+            # initial guess
+            p0 = 1e5
+
+            # bounds
+            boundSet = (0.1, 50e5)
+
+            # root finding
+            _res = optimize.fsolve(funSet, p0, args=(params,), xtol=1e-5)
+            # ->
+            if len(_res) == 1:
+                res = _res[0]
+            else:
+                res = 0
+
+            # res
+            return res
+
         except Exception as e:
             raise Exception("vapor-pressure estimation by eos failed!, ", e)
 
-    def vpEOS(p):
+    def vpEOS(self, p, params):
         '''
-        f(x) = 0
+        f(p) = [f(l)/f(v)] - 1
         '''
         try:
-            print(0)
+            # params
+            T, eos_model = params
+            # set
+            P = p[0]
+
+            # gas fugacity
+            gasFugacity, gasPhi = self.fugacities(
+                P, T, 'gas', eos_model, False)
+            # liquid fugacity
+            liquidFugacity, liquidPhi = self.fugacities(
+                P, T, 'liquid', eos_model, False)
+
+            # function
+            fx = abs((liquidFugacity/gasFugacity) - 1)
+
+            # gasFugacity = []
+            # liquidFugacity = []
+
+            # res
+            return fx
         except Exception as e:
             raise Exception("vapor-pressure function failed!, ", e)
 

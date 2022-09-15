@@ -9,8 +9,6 @@ import pandas as pd
 from PyCTPM.core.package import PackInfo
 from PyCTPM.core.utilities import csvLoaderV2, loadGeneralDataV2, loadGeneralDataV3
 from PyCTPM.database.dataInfo import DATABASE_INFO
-from PyCTPM.docs.eosCore import eosCoreClass
-from PyCTPM.docs.fugacity import FugacityClass
 from PyCTPM.docs.equilibrium import EquilibriumClass
 from PyCTPM.docs.dThermo import SetPhase, calMolarVolume, calVapourPressure
 
@@ -242,14 +240,14 @@ class Component(EquilibriumClass):
         '''
         return T/self.Tc
 
-    def vapor_pressure(self, T, mode=1):
+    def vapor_pressure(self, T, mode='antoine', eos_model='PR'):
         '''
         calculate vapor pressure at T using:
             1. Antoine equation (eq1)
             2. eos
         '''
         try:
-            _res = self.vaporPressure(T, mode)
+            _res = self.vaporPressure(T, mode, eos_model)
 
             return _res
         except Exception as e:

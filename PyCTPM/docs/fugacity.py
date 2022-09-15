@@ -214,26 +214,3 @@ class FugacityClass():
 
         except Exception as e:
             raise Exception("saturated liquid volume failed!")
-
-    def calVaporPressure(self):
-        '''
-        calculate vapor-pressure through optimization
-        '''
-        try:
-            # gas
-            gasFugacity, gasFugacityCoefficient = self._glFugacityPR('gas')
-            # liquid
-            liquidFugacity, liquidFugacityCoefficient = self._glFugacityPR(
-                'liquid')
-
-            # check
-            loss = gasFugacity - liquidFugacity
-
-            # res
-            return loss
-        except Exception as e:
-            raise Exception('vapor-pressure estimation failed!')
-
-    @classmethod
-    def __vaporPressureLoss(self):
-        pass
