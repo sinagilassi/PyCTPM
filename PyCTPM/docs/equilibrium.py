@@ -7,7 +7,7 @@ from scipy import optimize
 # local
 from PyCTPM.docs.eosCore import eosCoreClass
 from PyCTPM.docs.fugacity import FugacityClass
-from PyCTPM.docs.dThermo import calMolarVolume, calVapourPressure
+from PyCTPM.docs.dThermo import calMolarVolume, calVaporPressureV2, calVapourPressure
 
 
 class EquilibriumClass:
@@ -59,16 +59,17 @@ class EquilibriumClass:
             _Vp: vapor-pressure [Pa]
         '''
         try:
-            # comp symbol
-            _symbol = [self.symbol] if not isinstance(
-                self.symbol, list) else self.symbol
-
             # check
             if mode == 'antoine':
                 _Vp = calVapourPressure(
-                    _symbol, T, self.__vaporPressureData)
+                    [self.symbol], T, [self.__vaporPressureData])
             elif mode == 'eos':
                 _Vp = self.vaporPressureEOS(T, eos_model)
+            elif mode == 'shortcut':
+                # input
+                Tc = self.__thermoPropData['Tc']
+                w = self.__thermoPropData['w']
+                _Vp = calVaporPressureV2(T, Tc, w)
 
             # res
             return _Vp

@@ -748,9 +748,9 @@ def calVapourPressure(comList, T, loadData):
         calculate vapor pressure of pure component [Pa]
 
         args:
-            comList: component name list (symbol)
+            comList: component name list (symbol) *** array ***
             T: temperature [K]
-            loadData: database
+            loadData: database *** array ***
     """
     # try/except
     try:
@@ -847,11 +847,33 @@ def calVaporPressureV1():
     pass
 
 
-def calVaporPressureV2():
+def calVaporPressureV2(T, Tc, w):
     '''
     calculate vapor pressure using the shortcut equation
+
+    Note: 
+        The shortcut vapor pressure equation must be regarded as an approximation for rapid estimates. 
+        The  approximation  is  generally  good  above  P  =  0.5  bar; the  percent  error  can  become significant at lower pressures (and temperatures). 
+        Keep in mind that its estimates are based on the critical pressure which is generally 40-50 bar and acentric factor (at Tr = 0.7).
+
+    args:
+        T: desired temperature [K]
+        Pc: critical pressure [Pa]
+        Tc: critical temperature [K]
+        w: acentric factor [-]
+
+    return:
+        VaPe: vapor pressure [Pa]
     '''
-    pass
+    # reduced temperature
+    Tr = T/Tc
+    # vapor pressure
+    _VaPe = (7/3)*(1+w)*(1-(1/Tr))
+    VaPe = pow(10, _VaPe)
+    # -> conversion [bar -> Pa]
+    VaPe = VaPe*1e5
+    # res
+    return VaPe
 
 
 def SetPhase(state):

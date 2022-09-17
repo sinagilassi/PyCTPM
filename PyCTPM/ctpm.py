@@ -11,6 +11,7 @@ from PyCTPM.core import packageName, loadAllData, loadGeneralDataV1, \
 from PyCTPM.docs import ExtCoreClass, eosCoreClass, dUtilityClass
 from PyCTPM.docs.fugacity import FugacityClass
 from PyCTPM.docs import Component
+from PyCTPM.docs import Pool
 
 
 def main():
@@ -34,6 +35,16 @@ def component(id, state='g'):
         return Component(id, state)
     except Exception as e:
         raise Exception('define component object failed!, ', e)
+
+
+def pool(component_list):
+    '''
+    define a thermodynamic system containing multiple-components (obj)
+    '''
+    try:
+        return Pool(component_list)
+    except Exception as e:
+        raise Exception('pool failed!')
 
 
 def thermo(propName, modelInput, unit="SI"):

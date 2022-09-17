@@ -49,9 +49,6 @@ class Component(EquilibriumClass):
     _T_Tc_ratio = 0
     _Vp = 0
 
-    # ! data
-    # __vaporPressureData = []
-
     def __init__(self, id, state):
         self.id = str(id)
         self.state = state
@@ -61,7 +58,7 @@ class Component(EquilibriumClass):
         # -> thermo
         self.thermoPropData = _loadData['thermo']
         # -> vapor-pressure
-        # self.__vaporPressureData = _loadData['vapor-pressure']
+        self.vaporPressureData = _loadData['vapor-pressure']
         # * set data
         self.__setThermoProp()
 
@@ -149,6 +146,16 @@ class Component(EquilibriumClass):
     def dGf25(self, value):
         self._dGf25 = value
 
+    # ! data
+
+    @property
+    def thermo_properties_data(self):
+        return self.thermoPropData
+
+    @property
+    def vapor_pressure_antoine_data(self):
+        return self.vaporPressureData
+
     # ! static methods
 
     @staticmethod
@@ -183,10 +190,12 @@ class Component(EquilibriumClass):
                 # vapor-pressure
                 vaporPressureList = csvLoaderV2(
                     [self.id], DATABASE_INFO[4]['file'], 1)
+
+                # REVIEW
                 # res
                 res = {
                     'thermo': propList,
-                    'vapor-pressure': vaporPressureList
+                    'vapor-pressure': vaporPressureList[0]
                 }
 
                 return res
