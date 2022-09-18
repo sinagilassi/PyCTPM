@@ -277,3 +277,74 @@ class VLEClass:
         loss = abs((P/DePr) - 1)
 
         return loss
+
+    def vaporPressureMixture(self, T, mode):
+        '''
+        calculate mixture vapor-pressure
+        '''
+        # vapor pressure [Pa]
+        VaPe = np.zeros(self.compNo)
+        for i in range(self.compNo):
+            # REVIEW
+            VaPe[i] = self.pool[i].vapor_pressure(T, mode)
+
+        # res
+        return VaPe
+
+    def calBubblePressure(self, xi, VaPe):
+        '''
+        calculate bubble pressure
+
+        args:
+            xi: liquid mole fraction
+            VaPe: vapor-pressure [Pa]
+        '''
+        # bubble pressure
+        BuPr = np.dot(xi, VaPe)
+
+        # res
+        return BuPr
+
+    def calDewPressure(self, yi, VaPe):
+        '''
+        calculate dew pressure
+        '''
+        # dew-point pressure
+        DePr = 1/np.dot(yi, 1/VaPe)
+
+        # res
+        return DePr
+
+    def flashIsothermal(self, params, config):
+        '''
+        isothermal flash calculation
+
+        knowns:
+            1. zi
+            2. P
+            3. T
+
+        unknowns:
+            1. xi
+            2. yi
+            3. V
+            4. L
+        '''
+        try:
+            # params
+            zi = params.get('zi', [])
+            P = params.get('P', 0)
+            T = params.get('T', 0)
+
+            # config
+            VaPeCal = config.get('VaPeCal', 'antoine')
+            V_F_ratio_g0 = config.get('guess_V_F_ratio', 0.5)
+
+            # vapor-pressure
+            VaPri = self.vaporPressureMixture(T)
+
+            # ki ratio (Raoult's law)
+            ki = VaPri/P
+
+        except Exception as e:
+            raise Exception("flash isothermal failed!")

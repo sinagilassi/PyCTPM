@@ -16,8 +16,8 @@ P = 1*1e5
 Ps = np.array([1, 100, 1000])*1e5
 
 # define a molecule
-comp1 = component("C6H6", "g")
-comp2 = component("C7H8", "l")
+comp1 = component("H2O", "l")
+comp2 = component("C2H6O", "l")
 
 # molecular weight
 # print(comp1.MW)
@@ -55,7 +55,7 @@ comp2 = component("C7H8", "l")
 # define a binary system
 compList1 = [comp1, comp2]
 # mole fraction
-moleFraction1 = [0.26, 0.74]
+moleFraction1 = [0.5, 0.5]
 # system pressure [Pa]
 P1 = 101.3*1e3
 pool1 = pool(compList1)
@@ -63,5 +63,15 @@ pool1 = pool(compList1)
 # print(pool1.component_list[1].symbol)
 
 # bubble temperature
-bpt0 = pool1.bubble_temperature(moleFraction1, P1)
-print("bubble temperature: ", bpt0)
+# bpt0 = pool1.bubble_temperature(moleFraction1, P1)
+# print("bubble temperature: ", bpt0)
+
+# flash
+# inlet pressure [Pa]
+Pin = 11*1e3
+# flash pressure [Pa]
+Pf0 = 7.0*1e3
+# flash temperature [K]
+Tf0 = 30 + 273.15
+flash0 = pool1.flash(moleFraction1, Pin, Tf0, Pf0)
+print("flash0: ", flash0)
