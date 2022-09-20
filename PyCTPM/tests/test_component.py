@@ -3,7 +3,11 @@
 
 # import package/module
 import numpy as np
-from PyCTPM import component, pool
+from PyCTPM import component, pool, is_component_available
+
+# check component available in database
+ids = ["C3H8O", "1-propanol", "methanol", "water"]
+res0 = is_component_available(ids)
 
 # model input
 # eos model
@@ -16,8 +20,8 @@ P = 1*1e5
 Ps = np.array([1, 100, 1000])*1e5
 
 # define a molecule
-comp1 = component("H2O", "l")
-comp2 = component("C2H6O", "l")
+comp1 = component("water")
+comp2 = component("methanol", "l")
 
 # molecular weight
 # print(comp1.MW)
@@ -73,5 +77,5 @@ Pin = 11*1e3
 Pf0 = 7.0*1e3
 # flash temperature [K]
 Tf0 = 30 + 273.15
-flash0 = pool1.flash(moleFraction1, Pin, Tf0, Pf0)
-print("flash0: ", flash0)
+# flash0 = pool1.flash_isothermal(moleFraction1, Pf0, Tf0)
+# print("flash0: ", flash0)

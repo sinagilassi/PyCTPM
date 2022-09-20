@@ -26,7 +26,15 @@ DATABASE_INFO = [
     {
         "name": "VAPOR_PRESSURE",
         "file": "data_vapor_pressure.csv"
-    }
+    },
+    {
+        "name": "ENTHALPY_AND_GIBBS_ENERGY_OF_FORMATION",
+        "file": "data_enthalpy_and_gibbs_energy_of_formation.csv"
+    },
+    {
+        "name": "GENERAL_CONSTANTS",
+        "file": "CRITICAL CONSTANTS AND ACENTRIC FACTORS OF INORGANIC AND ORGANIC COMPOUNDS.csv"
+    },
 ]
 
 # general database info

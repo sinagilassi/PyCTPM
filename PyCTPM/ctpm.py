@@ -8,6 +8,7 @@ import os
 import PyCTPM.core.constants as CONST
 from PyCTPM.core import packageName, loadAllData, loadGeneralDataV1, \
     loadGeneralDataInfo, loadGeneralDataV2, checkUnitGeneralData, loadDataEOS
+from PyCTPM.database import DATABASE_INFO
 from PyCTPM.docs import ExtCoreClass, eosCoreClass, dUtilityClass
 from PyCTPM.docs.fugacity import FugacityClass
 from PyCTPM.docs import Component
@@ -21,12 +22,31 @@ def main():
     print(packageName)
 
 
-def component(id, state='g'):
+def is_component_available(ids):
+    '''
+    check a component available?
+
+    args:
+        ids: component id (name/symbol/formula)
+    '''
+    # set database
+    _dbSelect = DATABASE_INFO[6]['file']
+    # check ids
+    _res = loadGeneralDataV2(ids, _dbSelect)
+
+    return _res
+
+
+def component(id, state=''):
     '''
     define a component (molecule/electrolyte)
 
     args:
         id: symbol, name
+        state: 
+            gas: g
+            liquid: l
+            solid: s
 
     return:
         component object
@@ -218,19 +238,6 @@ def fugacity(modelInput):
         return _fugacityRes
     except Exception as e:
         raise Exception("Fugacity calculation failed!, ", e)
-
-
-#! test json
-def showJson():
-    appPath = "database\component.json"
-    print(appPath)
-    with open(appPath) as f:
-        data = json.load(f)
-        print(data)
-    #  lookup
-    res = data["payload"]
-    print(res)
-    return res
 
 
 if __name__ == "__main__":

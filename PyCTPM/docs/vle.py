@@ -35,30 +35,31 @@ class VLEClass:
         '''
         try:
             # params
-            T, zis = params
+            zi = params.get('zi', [])
+            T = params.get('T', 0)
 
             # config
             VaPeCal = config['VaPeCal']
 
-            # compo no
-            compNo = zis.size
-
             # vapor pressure [Pa]
-            VaPe = np.zeros(compNo)
-            for i in range(compNo):
+            VaPe = np.zeros(self.compNo)
+            for i in range(self.compNo):
                 # REVIEW
                 VaPe[i] = self.pool[i].vapor_pressure(T, mode=VaPeCal)
 
             # bubble pressure [Pa]
-            BuPr = np.multiply(zis, VaPe)
+            BuPr = np.multiply(zi, VaPe)
 
             # vapor mole fraction
-            yis = np.zeros(compNo)
-            for i in range(compNo):
-                yis[i] = zis[i]*VaPe[i]/BuPr
+            yi = np.zeros(self.compNo)
+            for i in range(self.compNo):
+                yi[i] = zi[i]*VaPe[i]/BuPr
+
+            # Ki ratio
+            Ki = np.multiply(yi, 1/zi)
 
             # res
-            return yis, BuPr
+            return yi, BuPr, VaPe, Ki
         except Exception as e:
             raise Exception(e)
 
@@ -333,18 +334,158 @@ class VLEClass:
         try:
             # params
             zi = params.get('zi', [])
-            P = params.get('P', 0)
-            T = params.get('T', 0)
+            P_flash = params.get('P_flash', 0)
+            T_flash = params.get('T_flash', 0)
+            VaPri = params.get('VaPe', [])
 
             # config
             VaPeCal = config.get('VaPeCal', 'antoine')
             V_F_ratio_g0 = config.get('guess_V_F_ratio', 0.5)
 
-            # vapor-pressure
-            VaPri = self.vaporPressureMixture(T)
-
             # ki ratio (Raoult's law)
-            ki = VaPri/P
+            Ki = VaPri/P_flash
+
+            # params
+            _params = (self.compNo, zi, Ki)
+            # V/F
+            _res0 = optimize.fsolve(
+                self.fitFunction, V_F_ratio_g0, args=(_params,))
+            # ->
+            V_F_ratio = _res0[0]
+
+            # liquid/vapor mole fraction
+            xi, yi = self.xyFlash(self.compNo, V_F_ratio, zi, Ki)
+
+            # L/F
+            L_F_ratio = 1 - V_F_ratio
+
+            # res
+            return V_F_ratio, L_F_ratio, xi, yi
 
         except Exception as e:
             raise Exception("flash isothermal failed!")
+
+    def fitFunction(self, x, params):
+        '''
+        flash isothermal function
+
+        args:
+            x: V/F guess
+            params: 
+                zi: feed mole fraction
+                Ki: K ratio
+        '''
+        # V/F
+        V_F_ratio = x[0]
+
+        # params
+        compNo, zi, Ki = params
+
+        fi = np.zeros(compNo)
+        for i in range(compNo):
+            fi[i] = (zi[i]*(1-Ki[i]))/(1+(V_F_ratio)*(Ki[i]-1))
+
+        f = np.sum(fi)
+
+        return f
+
+    def xyFlash(self, compNo, V_F_ratio, zi, Ki):
+        '''
+        calculate liquid/vapor mole fraction
+        '''
+        xi = np.zeros(compNo)
+        yi = np.zeros(compNo)
+
+        for i in range(compNo):
+            xi[i] = (zi[i])/(1+(V_F_ratio)*(Ki[i]-1))
+            yi[i] = Ki[i]*xi[i]
+
+        # res
+        return xi, yi
+
+    def flashIsothermalV2(self, params, config):
+        '''
+        isothermal flash calculation
+
+        knowns:
+            1. zi
+            2. P
+            3. T
+
+        unknowns:
+            1. xi
+            2. yi
+            3. V
+            4. L
+        '''
+        try:
+            # params
+            zi = params.get('zi', [])
+            P_flash = params.get('P_flash', 0)
+            T_flash = params.get('T_flash', 0)
+            VaPri = params.get('VaPe', [])
+
+            # config
+            VaPeCal = config.get('VaPeCal', 'antoine')
+            V_F_ratio_g0 = config.get('guess_V_F_ratio', 0.5)
+
+            # ki ratio (Raoult's law)
+            Ki = VaPri/P_flash
+
+            # params
+            _params = (self.compNo, zi, Ki)
+            # V/F
+            _res0 = optimize.fsolve(
+                self.fitFunction, V_F_ratio_g0, args=(_params,))
+            # ->
+            V_F_ratio = _res0[0]
+
+            # liquid/vapor mole fraction
+            xi, yi = self.xyFlash(self.compNo, V_F_ratio, zi, Ki)
+
+            # L/F
+            L_F_ratio = 1 - V_F_ratio
+
+            # res
+            return V_F_ratio, L_F_ratio, xi, yi
+
+        except Exception as e:
+            raise Exception("flash isothermal failed!")
+
+    def fitKiFunction(self, x, params):
+        '''
+        flash isothermal function
+
+        args:
+            x: Ki guess
+            params: 
+                compNo: component number
+                zi: feed mole fraction
+                F: feed flowrate
+
+        '''
+        # params
+        compNo, zi, F = params
+
+        # Ki
+        Ki = np.zeros(compNo)
+        for i in range(compNo):
+            Ki[i] = x[i]
+
+        _params = (compNo, zi, F, Ki)
+        _guess = 1
+        _res0 = optimize.fsolve(self.fitLoop1)
+
+        # system of nonlinear equations (NLE)
+        fi = np.zeros(compNo)
+        for i in range(compNo):
+            # solve the second NLE
+            fi[i] = Ki[i] - self.fitLoop1(Ki[i], params)
+
+        return fi
+
+    def fitLoop1(self, x, params):
+        # set
+        compNo, zi, F, Ki = params
+        # fi
+        fi = np.zeros()

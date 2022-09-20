@@ -185,17 +185,21 @@ class Component(EquilibriumClass):
             compId = self.id
 
             if isinstance(compId, str):
-                # property list
+                # * property list
                 propList = loadGeneralDataV3([self.id], [self.state])
-                # vapor-pressure
+                # * vapor-pressure
                 vaporPressureList = csvLoaderV2(
                     [self.id], DATABASE_INFO[4]['file'], 1)
+                # * enthalpy and gibbs free energy of formation [kJ/mol]
+                formationEnergyList = loadGeneralDataV3(
+                    [self.id], [self.state], dataFile=DATABASE_INFO[5]['file'])
 
                 # REVIEW
                 # res
                 res = {
                     'thermo': propList,
-                    'vapor-pressure': vaporPressureList[0]
+                    'vapor-pressure': vaporPressureList[0],
+                    'formation-energy': formationEnergyList
                 }
 
                 return res

@@ -127,20 +127,14 @@ def loadGeneralDataV1(compList):
         raise
 
 
-def loadGeneralDataV2(compList):
+def loadGeneralDataV2(compList, dataFile=DATABASE_INFO[0]['file']):
     '''
     load general data of components
     args:
         compList: component list
     '''
     try:
-        # data path
-        # dataMainDir = packageShortName + '\database'
-        # dataFile = DATABASE_INFO[0]['file']
-        # dataPath = os.path.join(dataMainDir, dataFile)
 
-        # data file
-        dataFile = DATABASE_INFO[0]['file']
         # abs path
         pathAbs = os.path.abspath(os.path.dirname(__file__))
         # relative path to database file
@@ -170,7 +164,9 @@ def loadGeneralDataV2(compList):
         for i in compList:
             _loop1 = [j for j, item in enumerate(
                 compData) if i in item.values()]
-            compDataIndex.append(_loop1[0])
+            #! check
+            if len(_loop1) > 0:
+                compDataIndex.append(_loop1[0])
 
         # select
         for j in compDataIndex:
@@ -181,7 +177,7 @@ def loadGeneralDataV2(compList):
         raise
 
 
-def loadGeneralDataV3(compList, state):
+def loadGeneralDataV3(compList, state=[], dataFile=DATABASE_INFO[0]['file']):
     '''
     load general data of components
 
@@ -193,13 +189,8 @@ def loadGeneralDataV3(compList, state):
         dict of list of thermodynamic data 
     '''
     try:
-        # data path
-        # dataMainDir = packageShortName + '\database'
-        # dataFile = DATABASE_INFO[0]['file']
-        # dataPath = os.path.join(dataMainDir, dataFile)
-
         # data file
-        dataFile = DATABASE_INFO[0]['file']
+        # dataFile = DATABASE_INFO[0]['file']
         # abs path
         pathAbs = os.path.abspath(os.path.dirname(__file__))
         # relative path to database file
@@ -227,16 +218,29 @@ def loadGeneralDataV3(compList, state):
             compData.append(row)
 
         # find compo index in data comp
-        for i in enumerate(zip(compList, state)):
-            _loop1 = [j for j, item in enumerate(
-                compData) if i[1][0] in item.values() and i[1][1] == str(item['state'])]
-            #! check
-            if len(_loop1) > 0:
-                compDataIndex.append(_loop1[0])
-            else:
-                print('the component is not available in the database!')
-                raise Exception(
-                    'the component is not available in the database!')
+        if "g" in state or "l" in state or "s" in state:
+            for i in enumerate(zip(compList, state)):
+                _loop1 = [j for j, item in enumerate(
+                    compData) if i[1][0] in item.values() and i[1][1] == str(item['state']).lower()]
+                #! check
+                if len(_loop1) > 0:
+                    compDataIndex.append(_loop1[0])
+                else:
+                    print('the component is not available in the database!')
+                    raise Exception(
+                        'the component is not available in the database!')
+        else:
+            # when state is not provided
+            for i in compList:
+                _loop1 = [j for j, item in enumerate(
+                    compData) if i[1][0] in item.values()]
+                #! check
+                if len(_loop1) > 0:
+                    compDataIndex.append(_loop1[0])
+                else:
+                    print('the component is not available in the database!')
+                    raise Exception(
+                        'the component is not available in the database!')
 
         # select
         for j in compDataIndex:
@@ -375,6 +379,8 @@ def csvLoaderV2(compList, databaseName, rowsSkip=0):
     load csv data of components
     args:
         compList: component list
+            a) formula (symbol)
+            b) name
     output:
         dict
     '''
