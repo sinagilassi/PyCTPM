@@ -37,6 +37,32 @@ DATABASE_INFO = [
     },
 ]
 
+
+DB_GENERAL = [
+    {
+        "name": "GENERAL",
+                "file": "data_general.csv"
+    },
+    {
+        "name": "GENERAL",
+                "file": "CRITICAL CONSTANTS AND ACENTRIC FACTORS OF INORGANIC AND ORGANIC COMPOUNDS.csv"
+    },
+]
+
+DB_HEAT = [
+    {
+        "name": "ENTHALPY_AND_GIBBS_ENERGY_OF_FORMATION",
+        "file": "data_enthalpy_and_gibbs_energy_of_formation.csv"
+    },
+]
+
+DB_VAPOR_PRESSURE = [
+    {
+        "name": "VAPOR_PRESSURE",
+        "file": "data_vapor_pressure.csv"
+    },
+]
+
 # general database info
 DATABASE_GENERAL_ITEMS = ["MW", "Tc", "Pc", "w", "dHf25", "dGf25"]
 DATABASE_GENERAL_ITEMS_FULL = [

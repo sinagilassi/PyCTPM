@@ -6,7 +6,7 @@ import numpy as np
 from PyCTPM import component, pool, is_component_available
 
 # check component available in database
-ids = ["pentane", "hexane", "cyclohexane", "water"]
+ids = ["n-pentane", "hexane", "cyclohexane", "water"]
 res0 = is_component_available(ids)
 
 # model input
@@ -20,8 +20,9 @@ P = 1*1e5
 Ps = np.array([1, 100, 1000])*1e5
 
 # define a molecule
-comp1 = component("water")
-comp2 = component("ethanol", "l")
+comp1 = component("n-pentane")
+comp2 = component("hexane")
+comp3 = component("cyclohexane")
 
 # molecular weight
 # print(comp1.MW)
@@ -57,7 +58,7 @@ comp2 = component("ethanol", "l")
 
 # ! VLE
 # define a binary system
-compList1 = [comp1, comp2]
+compList1 = [comp1, comp2, comp3]
 # mole fraction
 moleFraction1 = [0.5, 0.5]
 # system pressure [Pa]

@@ -221,26 +221,22 @@ def loadGeneralDataV3(compList, state=[], dataFile=DATABASE_INFO[0]['file']):
         if "g" in state or "l" in state or "s" in state:
             for i in enumerate(zip(compList, state)):
                 _loop1 = [j for j, item in enumerate(
-                    compData) if i[1][0] in item.values() and i[1][1] == str(item['state']).lower()]
+                    compData) if (str(i[1][0]).title() in item.values() or str(i[1][0]).lower() in item.values()) and i[1][1] == str(item['state']).lower()]
                 #! check
                 if len(_loop1) > 0:
                     compDataIndex.append(_loop1[0])
                 else:
                     print('the component is not available in the database!')
-                    raise Exception(
-                        'the component is not available in the database!')
         else:
             # when state is not provided
             for i in compList:
                 _loop1 = [j for j, item in enumerate(
-                    compData) if i[1][0] in item.values()]
+                    compData) if str(i).title() in item.values() or str(i).lower() in item.values()]
                 #! check
                 if len(_loop1) > 0:
                     compDataIndex.append(_loop1[0])
                 else:
                     print('the component is not available in the database!')
-                    raise Exception(
-                        'the component is not available in the database!')
 
         # select
         for j in compDataIndex:
@@ -250,7 +246,7 @@ def loadGeneralDataV3(compList, state=[], dataFile=DATABASE_INFO[0]['file']):
         if len(compDataSelected) == 1:
             return compDataSelected[0]
         else:
-            raise Exception("component not found!")
+            return {}
 
     except Exception as e:
         raise
@@ -422,14 +418,18 @@ def csvLoaderV2(compList, databaseName, rowsSkip=0):
         # find compo index in data comp
         for i in compList:
             _loop1 = [j for j, item in enumerate(
-                compData) if i in item.values()]
+                compData) if str(i).title() in item.values() or str(i).lower() in item.values()]
             compDataIndex.append(_loop1[0])
 
         # select
         for j in compDataIndex:
             compDataSelected.append(compData[j])
 
-        return compDataSelected
+        # check record no.
+        if len(compDataSelected) == 1:
+            return compDataSelected[0]
+        else:
+            return compDataSelected
     except Exception as e:
         raise
 

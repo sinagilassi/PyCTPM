@@ -110,7 +110,7 @@ class Pool(VLEClass, Display):
         # res
         return _res
 
-    def flash_isothermal(self, mole_fractions, flash_pressure, flash_temperature, guess_V_F_ratio=0.5, vapor_pressure_method='antoine', model="raoult"):
+    def flash_isothermal(self, mole_fractions, flash_pressure, flash_temperature, feed_flowrate=1, guess_V_F_ratio=0.5, vapor_pressure_method='antoine', model="raoult"):
         '''
         isothermal flash calculation
 
@@ -118,6 +118,7 @@ class Pool(VLEClass, Display):
             mole_fractions: feed mole fraction [-]
             flash_pressure: flash pressure [Pa]
             flash_temperature: flash temperature [K] - isothermal condition T[in]=T[out]
+            feed_flowrate: feed flowrate (mole basis) [mol/s]
             guess_V_F_ratio: 
             vapor_pressure_method: 
             model: "raoult"
@@ -149,6 +150,7 @@ class Pool(VLEClass, Display):
 
         # params
         params = {
+            "F": feed_flowrate,
             "zi": np.array(mole_fractions),
             "P_flash": flash_pressure,
             "T_flash": flash_temperature,
@@ -163,7 +165,7 @@ class Pool(VLEClass, Display):
         }
 
         # flash calculation
-        V_F_ratio, L_F_ratio, xi, yi = self.flashIsothermal(params, config)
+        V_F_ratio, L_F_ratio, xi, yi = self.flashIsothermalV2(params, config)
 
         # NOTE
         # ! display results

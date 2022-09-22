@@ -8,9 +8,10 @@ import pandas as pd
 # local
 from PyCTPM.core.package import PackInfo
 from PyCTPM.core.utilities import csvLoaderV2, loadGeneralDataV2, loadGeneralDataV3
-from PyCTPM.database.dataInfo import DATABASE_INFO
+from PyCTPM.database.dataInfo import DATABASE_INFO, DB_GENERAL, DB_HEAT, DB_VAPOR_PRESSURE
 from PyCTPM.docs.equilibrium import EquilibriumClass
 from PyCTPM.docs.dThermo import SetPhase, calMolarVolume, calVapourPressure
+from PyCTPM.database import DataSource
 
 
 class Component(EquilibriumClass):
@@ -43,7 +44,7 @@ class Component(EquilibriumClass):
     _w = 0
     _dHf25 = 0
     _dGf25 = 0
-    _state = "g"
+    _state = ""
 
     # ! calculated
     _T_Tc_ratio = 0
@@ -186,19 +187,27 @@ class Component(EquilibriumClass):
 
             if isinstance(compId, str):
                 # * property list
-                propList = loadGeneralDataV3([self.id], [self.state])
-                # * vapor-pressure
-                vaporPressureList = csvLoaderV2(
-                    [self.id], DATABASE_INFO[4]['file'], 1)
+                propList = DataSource.dbSearch(
+                    self.id, self.state, loadGeneralDataV3, DB_GENERAL)
+                # propList = loadGeneralDataV3([self.id], [self.state])
+
                 # * enthalpy and gibbs free energy of formation [kJ/mol]
-                formationEnergyList = loadGeneralDataV3(
-                    [self.id], [self.state], dataFile=DATABASE_INFO[5]['file'])
+                formationEnergyList = DataSource.dbSearch(
+                    self.id, self.state, loadGeneralDataV3, DB_HEAT)
+                # formationEnergyList = loadGeneralDataV3(
+                #     [self.id], [self.state], dataFile=DATABASE_INFO[5]['file'])
+
+                # * vapor-pressure
+                vaporPressureList = DataSource.dbSearch(
+                    self.id, self.state, loadGeneralDataV3, DB_VAPOR_PRESSURE)
+                # vaporPressureList = csvLoaderV2(
+                #     [self.id], DATABASE_INFO[4]['file'], 1)
 
                 # REVIEW
                 # res
                 res = {
                     'thermo': propList,
-                    'vapor-pressure': vaporPressureList[0],
+                    'vapor-pressure': vaporPressureList,
                     'formation-energy': formationEnergyList
                 }
 
