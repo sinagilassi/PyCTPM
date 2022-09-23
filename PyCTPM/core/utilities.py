@@ -245,8 +245,10 @@ def loadGeneralDataV3(compList, state=[], dataFile=DATABASE_INFO[0]['file']):
         #! check
         if len(compDataSelected) == 1:
             return compDataSelected[0]
-        else:
+        elif len(compDataSelected) == 0:
             return {}
+        else:
+            return compDataSelected
 
     except Exception as e:
         raise

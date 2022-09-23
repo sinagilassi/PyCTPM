@@ -3,10 +3,12 @@
 
 # packages/modules
 import numpy as np
+from matplotlib import pyplot as plt
 # local
 from PyCTPM.docs.vle import VLEClass
 from PyCTPM.results import Display
 from PyCTPM.core import roundNum
+from PyCTPM.results import Visual
 
 
 class Pool(VLEClass, Display):
@@ -110,7 +112,7 @@ class Pool(VLEClass, Display):
         # res
         return _res
 
-    def flash_isothermal(self, mole_fractions, flash_pressure, flash_temperature, feed_flowrate=1, guess_V_F_ratio=0.5, vapor_pressure_method='antoine', model="raoult"):
+    def flash_isothermal(self, mole_fractions, flash_pressure, flash_temperature, feed_pressure, feed_flowrate=1, guess_V_F_ratio=0.5, vapor_pressure_method='antoine', model="raoult"):
         '''
         isothermal flash calculation
 
@@ -118,6 +120,7 @@ class Pool(VLEClass, Display):
             mole_fractions: feed mole fraction [-]
             flash_pressure: flash pressure [Pa]
             flash_temperature: flash temperature [K] - isothermal condition T[in]=T[out]
+            feed_pressure: feed pressure to check the current state of the feed
             feed_flowrate: feed flowrate (mole basis) [mol/s]
             guess_V_F_ratio: 
             vapor_pressure_method: 
@@ -147,6 +150,11 @@ class Pool(VLEClass, Display):
         else:
             # one phase exist (liquid)
             flashState = False
+
+        # check current state of the feed
+        feedState = True
+        if feed_pressure < BuPr:
+            feedState = False
 
         # params
         params = {
@@ -201,3 +209,64 @@ class Pool(VLEClass, Display):
 
         # res
         return flashState, BuPr, DePr, VaPe, V_F_ratio, L_F_ratio, xi, yi
+
+    def Txy_binary(self, pressure, guess_temperature=350, vapor_pressure_method='antoine', model="raoult", zi_no=10):
+        '''
+        bubble temperature calculation
+
+        args:
+            mole_fraction: feed mole fraction (zi=xi)
+            pressure: system pressure [Pa]
+            guess_temperature: 
+            vapor_pressure_method: vapor-pressure calculation method (default: antoine)
+            model: thermodynamic model for equilibrium system (default: raoult)
+            zi_no: number of mole fractions
+        '''
+        #  feed mole fraction
+        x1 = np.linspace(0.001, 0.999, zi_no)
+        x2 = 1 - x1
+        #
+        mole_fractions = np.array([x1, x2])
+
+        # res
+        _res = []
+
+        for i in range(zi_no):
+            # params
+            params = {
+                "zi": np.array(mole_fractions[:, i]),
+                "P": pressure
+            }
+
+            # config
+            config = {
+                "Tg0": guess_temperature,
+                "VaPeCal": vapor_pressure_method
+            }
+
+            # cal
+            _btRes = self.bubbleTemperature(params, config)
+            _res.append(_btRes)
+
+        # Ts
+        Ts = [item['T'] for item in _res]
+        # xi
+        xi = [item['xi'][0] for item in _res]
+        # yi
+        yi = [item['yi'][0] for item in _res]
+        # set
+        bubbleLine = [[xi], [Ts]]
+        dewLine = [[yi], [Ts]]
+
+        # ! plot setting
+        # XYList = Visual.plots2DSetXYList(dataX, dataYs)
+        # -> label
+        # dataList = Visual.plots2DSetDataList(XYList, labelList)
+        # Visual.plot2D(xi, Ts)
+        # Visual.plot2D(yi, Ts)
+
+        plt.plot(xi, Ts, 'r-', yi, Ts, 'b-')
+        plt.show()
+
+        # res
+        return _res

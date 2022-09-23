@@ -7,7 +7,7 @@ import os
 # internals
 import PyCTPM.core.constants as CONST
 from PyCTPM.core import packageName, loadAllData, loadGeneralDataV1, \
-    loadGeneralDataInfo, loadGeneralDataV2, checkUnitGeneralData, loadDataEOS
+    loadGeneralDataInfo, loadGeneralDataV3, checkUnitGeneralData, loadDataEOS
 from PyCTPM.database import DATABASE_INFO
 from PyCTPM.docs import ExtCoreClass, eosCoreClass, dUtilityClass
 from PyCTPM.docs.fugacity import FugacityClass
@@ -32,7 +32,7 @@ def is_component_available(ids):
     # set database
     _dbSelect = DATABASE_INFO[6]['file']
     # check ids
-    _res = loadGeneralDataV2(ids, _dbSelect)
+    _res = loadGeneralDataV3(ids, dataFile=_dbSelect)
 
     return _res
 

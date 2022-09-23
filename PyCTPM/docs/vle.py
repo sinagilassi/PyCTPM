@@ -147,26 +147,33 @@ class VLEClass:
 
             # params
             _params = (self.compNo, zi, P, VaPeCal)
-            # bubble pressure [Pa]
+            # bubble temperature [K]
             _res0 = optimize.fsolve(self.btFunction, Tg0, args=(_params,))
             # ->
             # REVIEW
-            Tg = _res0[0]
+            T = _res0[0]
 
             # vapor pressure [Pa]
             # at T (Tg)
             VaPe = np.zeros(self.compNo)
             for i in range(self.compNo):
                 # REVIEW
-                VaPe[i] = self.pool[i].vapor_pressure(Tg, VaPeCal)
+                VaPe[i] = self.pool[i].vapor_pressure(T, VaPeCal)
 
             # vapor mole fraction
-            yis = np.zeros(self.compNo)
+            yi = np.zeros(self.compNo)
             for i in range(self.compNo):
-                yis[i] = zi[i]*VaPe[i]/P
+                yi[i] = zi[i]*VaPe[i]/P
+
+            _res = {
+                "T": T,
+                "yi": yi,
+                'xi': zi,
+                "VaPe": VaPe
+            }
 
             # res
-            return Tg, yis, VaPe
+            return _res
         except Exception as e:
             raise Exception(e)
 
