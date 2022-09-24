@@ -225,8 +225,6 @@ def loadGeneralDataV3(compList, state=[], dataFile=DATABASE_INFO[0]['file']):
                 #! check
                 if len(_loop1) > 0:
                     compDataIndex.append(_loop1[0])
-                else:
-                    print('the component is not available in the database!')
         else:
             # when state is not provided
             for i in compList:
@@ -235,8 +233,6 @@ def loadGeneralDataV3(compList, state=[], dataFile=DATABASE_INFO[0]['file']):
                 #! check
                 if len(_loop1) > 0:
                     compDataIndex.append(_loop1[0])
-                else:
-                    print('the component is not available in the database!')
 
         # select
         for j in compDataIndex:

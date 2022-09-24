@@ -36,7 +36,7 @@ class eosClass:
         selectEOS = {
             "PR": lambda: (a * self.P) / np.power(CONST.R_CONST * self.T, 2),
             "RK": lambda: (a * self.P) / (np.power(CONST.R_CONST, 2) * np.power(self.T, 2.5)),
-            "VDW": 1
+            "VDW": lambda: (a * self.P) / np.power(CONST.R_CONST * self.T, 2),
         }
         # exe
         res = selectEOS.get(eosNameSet)()
@@ -256,7 +256,6 @@ class eosClass:
         res = a0*alpha
         return res
 
-    # b
     def bPR(self, Pc, Tc):
         '''
         calculate peng-robinson b constant
@@ -273,3 +272,64 @@ class eosClass:
         '''
         res = (0.07779607 * CONST.R_CONST * Tc) / Pc
         return res
+
+    @classmethod
+    def aVDW(cls, Pc, Tc):
+        '''
+        calculate van der Waals equation a constant
+
+        args:
+            Pc: critical pressure [Pa]
+                its unit is compatible with R [J/mol.K]/[Pa.m^3/mol.K]
+            Tc: critical temperature [K]
+
+        while universal gas constant [J/mol.K]
+
+        output:
+            a: constant [Pa.(m3^2)/(mol^2)]
+        '''
+        return (27/64)*((CONST.R_CONST**2)*(Tc**2)/(Pc))
+
+    @classmethod
+    def bVDW(cls, Pc, Tc):
+        '''
+        calculate van der Waals equation b constant
+
+        args:
+            Pc: critical pressure [Pa]
+                its unit is compatible with R [J/mol.K]/[Pa.m^3/mol.K]
+            Tc: critical temperature [K]
+
+        while universal gas constant [J/mol.K]
+
+        output:
+            b: constant [m^3/mol]  
+        '''
+        return (CONST.R_CONST/8)*(Tc/Pc)
+
+    @classmethod
+    def abVDM(cls, components):
+        '''
+        calculate van der Waals equation a and b constants
+
+        return:
+            a:
+            b:
+        '''
+        # component no
+        compNo = len(components)
+
+        ai = []
+        bi = []
+
+        for i in range(compNo):
+            _Pc = components[i].Pc
+            _Tc = components[i].Tc
+            _a = cls.aVDW(_Pc, _Tc)
+            _b = cls.bVDW(_Pc, _Tc)
+            # save
+            ai.append(_a)
+            bi.append(_b)
+
+        # res
+        return ai, bi

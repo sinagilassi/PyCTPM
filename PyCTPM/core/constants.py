@@ -9,6 +9,10 @@ PENG_ROBINSON = "PR"
 REDLICH_KWONG_SOAVE = "RSK"
 VAN_DER_WAALS = "VDW"
 
+# ! vle models
+RAOULT_MODEL = 'raoult'
+MODIFIED_RAOULT_MODEL = 'modified-raoult'
+
 # universal gas constant [J/mol.K]
 R_CONST = 8.314472
 

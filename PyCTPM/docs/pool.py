@@ -27,7 +27,7 @@ class Pool(VLEClass, Display):
     def component_list(self):
         return self.componentList
 
-    def bubble_pressure(self, mole_fractions, temperature, vapor_pressure_method='antoine', activity_coefficient_config=[]):
+    def bubble_pressure(self, mole_fractions, temperature, vapor_pressure_method='antoine', model='raoult'):
         '''
         bubble pressure calculation
 
@@ -39,6 +39,9 @@ class Pool(VLEClass, Display):
                 1. model name 
                     a) Margules equation
                 2. model parameters
+            model: vle thermodynamic model
+                1. raoult
+                2. modified-raoult
         '''
         # params
         params = {
@@ -48,14 +51,15 @@ class Pool(VLEClass, Display):
 
         # config
         config = {
-            "VaPeCal": vapor_pressure_method
+            "VaPeCal": vapor_pressure_method,
+            "model": model
         }
 
         # cal
-        yi, BuPr, VaPe, Ki = self.bubblePressure(params, config)
+        yi, BuPr, VaPe, Ki, AcCo = self.bubblePressure(params, config)
 
         # res
-        return yi, BuPr, VaPe, Ki
+        return yi, BuPr, VaPe, Ki, AcCo
 
     def dew_pressure(self):
         pass
@@ -266,6 +270,67 @@ class Pool(VLEClass, Display):
         # Visual.plot2D(yi, Ts)
 
         plt.plot(xi, Ts, 'r-', yi, Ts, 'b-')
+        plt.show()
+
+        # res
+        return _res
+
+    def Pxy_binary(self, temperature,  vapor_pressure_method='antoine', model="modified-raoult", zi_no=10):
+        '''
+        bubble temperature calculation
+
+        args:
+            mole_fraction: feed mole fraction (zi=xi)
+            temperature: system (fixed) temperature [K]
+            vapor_pressure_method: vapor-pressure calculation method (default: antoine)
+            model: thermodynamic model for equilibrium system (default: raoult)
+            zi_no: number of mole fractions
+        '''
+        #  feed mole fraction
+        x1 = np.linspace(0.001, 0.999, zi_no)
+        x2 = 1 - x1
+        #
+        mole_fractions = np.array([x1, x2])
+
+        # res
+        _res = []
+
+        for i in range(zi_no):
+            # params
+            params = {
+                "zi": np.array(mole_fractions[:, i]),
+                "T": temperature
+            }
+
+            # config
+            config = {
+                "VaPeCal": vapor_pressure_method,
+                "model": model
+            }
+
+            # ! check vle model
+            # cal
+            _btRes = self.bubblePressure(params, config)
+            _res.append(_btRes)
+
+        # pressure series (Ps)
+        Ps = [item['P'] for item in _res]
+        # xi
+        xi = [item['xi'][0] for item in _res]
+        # yi
+        yi = [item['yi'][0] for item in _res]
+        # set
+        bubbleLine = [[xi], [Ps]]
+        dewLine = [[yi], [Ps]]
+
+        # ! plot setting
+        # XYList = Visual.plots2DSetXYList(dataX, dataYs)
+        # -> label
+        # dataList = Visual.plots2DSetDataList(XYList, labelList)
+        # Visual.plot2D(xi, Ts)
+        # Visual.plot2D(yi, Ts)
+
+        plt.plot(xi, Ps, 'r-', yi, Ps, 'b-')
         plt.show()
 
         # res

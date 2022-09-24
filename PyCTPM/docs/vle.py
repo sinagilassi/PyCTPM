@@ -4,6 +4,10 @@
 # packages/modules
 import numpy as np
 from scipy import optimize
+# local
+from PyCTPM.core.constants import MODIFIED_RAOULT_MODEL
+from PyCTPM.docs.excessproperties import ExcessProperties
+from PyCTPM.docs.eos import eosClass
 
 
 class VLEClass:
@@ -39,7 +43,21 @@ class VLEClass:
             T = params.get('T', 0)
 
             # config
-            VaPeCal = config['VaPeCal']
+            VaPeCal = config.get('VaPeCal')
+            model = config.get('model')
+
+            # activity coefficient
+            if model == MODIFIED_RAOULT_MODEL:
+                # set eos class
+                ai, bi = eosClass.abVDM(self.pool)
+                # set excess properties class
+                ExcessPropertiesClass = ExcessProperties(self.pool, zi, T)
+                # activity coefficient
+                AcCo = ExcessPropertiesClass.VanLaar_activity_coefficient(
+                    zi, ai, bi)
+            else:
+                # equals unity for ideal solution
+                AcCo = np.ones(self.compNo)
 
             # vapor pressure [Pa]
             VaPe = np.zeros(self.compNo)
@@ -48,18 +66,27 @@ class VLEClass:
                 VaPe[i] = self.pool[i].vapor_pressure(T, mode=VaPeCal)
 
             # bubble pressure [Pa]
-            BuPr = np.multiply(zi, VaPe)
+            BuPr = np.sum(AcCo*zi*VaPe)
 
             # vapor mole fraction
             yi = np.zeros(self.compNo)
             for i in range(self.compNo):
-                yi[i] = zi[i]*VaPe[i]/BuPr
+                yi[i] = zi[i]*VaPe[i]*AcCo[i]/BuPr
 
             # Ki ratio
             Ki = np.multiply(yi, 1/zi)
 
+            res = {
+                "P": BuPr,
+                "T": T,
+                "yi": yi,
+                'xi': zi,
+                "VaPe": VaPe,
+                "AcCo": AcCo
+            }
+
             # res
-            return yi, BuPr, VaPe, Ki
+            return res
         except Exception as e:
             raise Exception(e)
 
@@ -97,7 +124,7 @@ class VLEClass:
                 VaPe[i] = 1
 
             # dew pressure [Pa]
-            DePr = 1/np.multiply(zis, 1/VaPe)
+            DePr = 1/np.dot(zis, 1/VaPe)
 
             # liquid mole fraction
             xis = np.zeros(compNo)
