@@ -2,22 +2,17 @@
 # ------------------
 
 # packages/modules
-from math import pow, sqrt, exp
+from math import pow, sqrt, exp, log
 import numpy as np
 # local
 from PyCTPM.core import R_CONST
 
 
 class ExcessProperties:
-    def __init__(self, components, moleFraction, temperature):
+    def __init__(self, components):
         self.components = components
-        self.xi = moleFraction
-        self.T = temperature
         # set
         self.compNo = len(components)
-
-    def VanLaarEquation(self):
-        pass
 
     def VanLaar_am_bm(self, xi, ai, bi):
         '''
@@ -55,7 +50,7 @@ class ExcessProperties:
         # res
         return am, bm
 
-    def VanLaar_L(self, ai, bi):
+    def VanLaar_L(self, ai, bi, T):
         '''
         calculate L[i,j]
         '''
@@ -68,12 +63,12 @@ class ExcessProperties:
                     _c0 = sqrt(ai[i])/bi[i]
                     _c1 = sqrt(ai[j])/bi[j]
                     _c2 = pow(_c0-_c1, 2)
-                    Lij[i, j] = (bi[i]/(R_CONST*self.T))*_c2
+                    Lij[i, j] = (bi[i]/(R_CONST*T))*_c2
 
         # res
         return Lij
 
-    def VanLaar_activity_coefficient(self, xi, ai, bi):
+    def VanLaar_activity_coefficient(self, xi, ai, bi, T):
         '''
         calculate activity coefficient
 
@@ -89,7 +84,7 @@ class ExcessProperties:
         # am, bm = self.VanLaar_am_bm(ai, bi)
 
         # L
-        Lij = self.VanLaar_L(ai, bi)
+        Lij = self.VanLaar_L(ai, bi, T)
 
         for i in range(self.compNo):
             for j in range(self.compNo):
@@ -102,3 +97,23 @@ class ExcessProperties:
 
         # res
         return AcCo
+
+    def ExcessMolarGibbsFreeEnergy(self, xi, AcCoi):
+        '''
+        calculate excess molar Gibbs free energy from activity coefficient of each component in a system
+
+        args:
+            xi: liquid mole fraction
+            AcCoi: activity coefficient
+        '''
+        # G(E)/RT
+        c0 = np.zeros(self.compNo)
+
+        for i in range(self.compNo):
+            c0[i] = xi[i]*log(AcCoi[i])
+
+        # excess molar gibbs energy
+        c1 = np.sum(c0)
+
+        # res
+        return c1

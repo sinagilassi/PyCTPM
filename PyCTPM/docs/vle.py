@@ -8,9 +8,10 @@ from scipy import optimize
 from PyCTPM.core.constants import MODIFIED_RAOULT_MODEL
 from PyCTPM.docs.excessproperties import ExcessProperties
 from PyCTPM.docs.eos import eosClass
+from PyCTPM.docs.margules import Margules
 
 
-class VLEClass:
+class VLEClass(ExcessProperties, Margules):
     '''
     vapor-liquid equilibrium calculation
     '''
@@ -19,6 +20,10 @@ class VLEClass:
         self.pool = pool
         # set
         self.compNo = len(pool)
+
+        # init class
+        ExcessProperties.__init__(self, pool)
+        Margules.__init__(self, pool)
 
     def bubblePressure(self, params, config):
         '''
@@ -51,10 +56,10 @@ class VLEClass:
                 # set eos class
                 ai, bi = eosClass.abVDM(self.pool)
                 # set excess properties class
-                ExcessPropertiesClass = ExcessProperties(self.pool, zi, T)
+                # ExcessPropertiesClass = ExcessProperties(self.pool)
                 # activity coefficient
-                AcCo = ExcessPropertiesClass.VanLaar_activity_coefficient(
-                    zi, ai, bi)
+                AcCo = self.VanLaar_activity_coefficient(
+                    zi, ai, bi, T)
             else:
                 # equals unity for ideal solution
                 AcCo = np.ones(self.compNo)
@@ -570,3 +575,21 @@ class VLEClass:
         fi[-1] = np.sum(xi) - 1
 
         return fi
+
+    def activityCoefficientUsingModifiedRaoult(self, xi, yi, P, VaPr):
+        '''
+        calculate activity coefficient using modified raoult's law
+
+        args:
+            xi: liquid mole fraction
+            yi: vapor mole fraction
+            P: pressure [Pa]
+            VaPr: vapor pressure [Pa]
+        '''
+        # AcCo
+        AcCo = np.zeros(self.compNo)
+        for i in range(self.compNo):
+            AcCo[i] = (yi[i]*P)/(xi[i]*VaPr[i])
+
+        # res
+        return AcCo

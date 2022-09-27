@@ -2,6 +2,7 @@
 # -----
 
 # packages/modules
+from typing import List
 import numpy as np
 from matplotlib import pyplot as plt
 # local
@@ -27,7 +28,7 @@ class Pool(VLEClass, Display):
     def component_list(self):
         return self.componentList
 
-    def bubble_pressure(self, mole_fractions, temperature, vapor_pressure_method='antoine', model='raoult'):
+    def bubble_pressure(self, mole_fractions, temperature, vapor_pressure_method='antoine', model='raoult', activity_coefficient_model='van-laar'):
         '''
         bubble pressure calculation
 
@@ -116,7 +117,7 @@ class Pool(VLEClass, Display):
         # res
         return _res
 
-    def flash_isothermal(self, mole_fractions, flash_pressure, flash_temperature, feed_pressure, feed_flowrate=1, guess_V_F_ratio=0.5, vapor_pressure_method='antoine', model="raoult"):
+    def flash_isothermal(self, mole_fractions, flash_pressure, flash_temperature, feed_pressure, feed_flowrate=1, guess_V_F_ratio=0.5, vapor_pressure_method='antoine', model="raoult", activity_coefficient_model='van-laar'):
         '''
         isothermal flash calculation
 
@@ -137,14 +138,14 @@ class Pool(VLEClass, Display):
                 2. P[dew]>P[flash] results in the vapor phase feed
         '''
         # vapor pressure at inlet temperature
-        VaPe = self.vaporPressureMixture(
+        VaPr = self.vaporPressureMixture(
             flash_temperature, vapor_pressure_method)
 
         # bubble pressure [Pa]
-        BuPr = self.calBubblePressure(mole_fractions, VaPe)
+        BuPr = self.calBubblePressure(mole_fractions, VaPr)
 
         # dew pressure
-        DePr = self.calDewPressure(mole_fractions, VaPe)
+        DePr = self.calDewPressure(mole_fractions, VaPr)
 
         # check flash
         flashState = False
@@ -166,7 +167,7 @@ class Pool(VLEClass, Display):
             "zi": np.array(mole_fractions),
             "P_flash": flash_pressure,
             "T_flash": flash_temperature,
-            "VaPe": VaPe
+            "VaPe": VaPr
         }
 
         # config
@@ -189,7 +190,7 @@ class Pool(VLEClass, Display):
 
         for i in range(self.compNo):
             _display.append(
-                [self.componentList[i].symbol+' vapor-pressure [P*]', roundNum(VaPe[i], 3), 'Pa'])
+                [self.componentList[i].symbol+' vapor-pressure [P*]', roundNum(VaPr[i], 3), 'Pa'])
 
         for i in range(self.compNo):
             _display.append([self.componentList[i].symbol +
@@ -212,7 +213,7 @@ class Pool(VLEClass, Display):
         self.colDisplay(_display)
 
         # res
-        return flashState, BuPr, DePr, VaPe, V_F_ratio, L_F_ratio, xi, yi
+        return flashState, BuPr, DePr, VaPr, V_F_ratio, L_F_ratio, xi, yi
 
     def Txy_binary(self, pressure, guess_temperature=350, vapor_pressure_method='antoine', model="raoult", zi_no=10):
         '''
@@ -335,3 +336,43 @@ class Pool(VLEClass, Display):
 
         # res
         return _res
+
+    def Margules_1Parameter(self, liquid_mole_fraction, vapor_mole_fraction, pressure, temperature,  vapor_pressure_method='antoine'):
+        '''
+        find Margules 1-parameter based on experimental results for a binary system
+
+        args:
+            liquid_mole_fraction: liquid mole fraction as [x1,x2]
+            vapor_mole_fraction: vapor mole fraction as [y1,y2]
+            pressure: system pressure as P
+
+        return:
+            A12: Margules 1-parameter 
+        '''
+        try:
+            # vapor pressure at inlet temperature
+            VaPr = self.vaporPressureMixture(
+                temperature, vapor_pressure_method)
+
+            # calculate excess molar gibbs energy
+            #! check
+            if len(liquid_mole_fraction) == 1 and len(vapor_mole_fraction) == 1:
+                # activity coefficient from experimental data
+                AcCoExp = self.activityCoefficientUsingModifiedRaoult(
+                    liquid_mole_fraction[0], vapor_mole_fraction[0], pressure[0], VaPr)
+
+                # one algebraic equation (A(12)*x1*x2)
+                ExMoGiEn = self.ExcessMolarGibbsFreeEnergy(
+                    liquid_mole_fraction[0], AcCoExp)
+
+                # A12 parameter
+                A12 = ExMoGiEn / \
+                    (liquid_mole_fraction[0][0]*liquid_mole_fraction[0][1])
+
+                return A12
+            else:
+                # solve a system of non-linear equation
+                pass
+
+        except Exception as e:
+            pass

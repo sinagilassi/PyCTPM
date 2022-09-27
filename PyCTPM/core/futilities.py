@@ -42,3 +42,24 @@ class FileUtilityClass:
             return fileDir, fileName, fileFormat
         else:
             raise Exception('file path is not valid.')
+
+    @staticmethod
+    def SaveNpArray(arr, file_name='', location=''):
+        '''
+        save numpy array
+        '''
+        try:
+            # full file name
+            if not file_name:
+                file_name = "np_array"
+            fullFileName = f"{file_name}.npy"
+            # location
+            fileLoc = os.path.join(location, fullFileName)
+
+            # open
+            with open(fileLoc, 'wb') as f:
+                np.save(f, arr)
+
+            print(f"save operation is done.")
+        except Exception as e:
+            raise
