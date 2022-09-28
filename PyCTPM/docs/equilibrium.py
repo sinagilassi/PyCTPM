@@ -1,4 +1,5 @@
 # EQUILIBRIUM CLASS
+# for component class
 # -------------------
 
 # packages/modules
@@ -52,15 +53,18 @@ class EquilibriumClass:
     def vaporPressure(self, T, mode, eos_model):
         '''
         calculate vapor pressure at T using:
-            1. Antoine equation (eq1)
+            1. polynomial
+                a) Antoine equation (eq1)
+                b) Antoine equation (eq2)
             2. eos
+            3. shortcut
 
         return:
             _Vp: vapor-pressure [Pa]
         '''
         try:
             # check
-            if mode == 'antoine':
+            if mode == 'polynomial':
                 _Vp = calVapourPressure(
                     [self.symbol], T, [self.__vaporPressureData])
             elif mode == 'eos':

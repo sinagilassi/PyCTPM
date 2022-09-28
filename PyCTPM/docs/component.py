@@ -262,11 +262,14 @@ class Component(EquilibriumClass):
         '''
         return T/self.Tc
 
-    def vapor_pressure(self, T, mode='antoine', eos_model='PR'):
+    def vapor_pressure(self, T, mode='polynomial', eos_model='PR'):
         '''
         calculate vapor pressure at T using:
-            1. Antoine equation (eq1)
+            1. polynomial
+                a) Antoine equation (eq1)
+                b) Antoine equation (eq2)
             2. eos
+            3. shortcut
         '''
         try:
             _res = self.vaporPressure(T, mode, eos_model)

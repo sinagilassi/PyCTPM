@@ -41,11 +41,11 @@ DATABASE_INFO = [
 DB_GENERAL = [
     {
         "name": "GENERAL",
-                "file": "data_general.csv"
+        "file": "data_general.csv"
     },
     {
         "name": "GENERAL",
-                "file": "CRITICAL CONSTANTS AND ACENTRIC FACTORS OF INORGANIC AND ORGANIC COMPOUNDS.csv"
+        "file": "CRITICAL CONSTANTS AND ACENTRIC FACTORS OF INORGANIC AND ORGANIC COMPOUNDS.csv"
     },
 ]
 
@@ -61,6 +61,10 @@ DB_VAPOR_PRESSURE = [
         "name": "VAPOR_PRESSURE",
         "file": "data_vapor_pressure.csv"
     },
+    {
+        "name": "VAPOR_PRESSURE",
+        "file": "Vapor Pressure of Inorganic and Organic Liquids.csv"
+    }
 ]
 
 # general database info

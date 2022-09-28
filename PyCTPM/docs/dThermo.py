@@ -4,7 +4,7 @@
 # import packages/modules
 import numpy as np
 import re
-from math import sqrt, exp, pow
+from math import sqrt, exp, pow, log
 # internals
 from PyCTPM.core import Tref, R_CONST
 
@@ -743,6 +743,41 @@ def calVapourPressureEq1(params, T):
         raise
 
 
+def calVapourPressureEq2(params, T):
+    '''
+    Antoine Equation for Vapor Pressures of Pure Species
+
+    TABLE 2-8 Vapor Pressure of Inorganic and Organic Liquids, ln P = C1 + C2/T + C3 ln T + C4T C5, P in Pa
+
+    args:
+        params: Antoine equation params:
+            C1
+            C2
+            C3
+            C4
+            C5
+        T: temperature [K]
+
+    output:
+        res: vapour pressure [Pa] 
+    '''
+    # try/except
+    try:
+        C1 = float(params[0])
+        C2 = float(params[1])
+        C3 = float(params[2])
+        C4 = float(params[3])
+        C5 = float(params[4])
+
+        # vapour pressure [kPa]
+        res = exp(C1 + (C2/T) + C3*log(T) + C4*pow(T, C5))
+
+        # res
+        return res
+    except Exception as e:
+        raise
+
+
 def calVapourPressure(comList, T, loadData):
     """
         calculate vapor pressure of pure component [Pa]
@@ -763,28 +798,36 @@ def calVapourPressure(comList, T, loadData):
             # get id
             eqIdData = [item['id']
                         for item in loadData if str(i) == item['component-symbol']]
-            # get eq parameters
-            eqData = [{"eqParams": [item['A'], item['B'], item['C']], "eqExpr": item['expr']}
-                      for item in loadData if i == item['component-symbol']]
             # check
-            _eqLen = len(eqIdData) + len(eqData)
+            _eqLen = len(eqIdData)
             if _eqLen > 0:
                 _eqIdSet = eqIdData[0]
-                _eqData = eqData[0]
+                # ! check
                 if _eqIdSet == "eq1":
-                    # REVIEW
-                    # eq1
-                    _eqParams = _eqData.get('eqParams')
-                    _eqExpr = _eqData.get('eqExpr')
-                    _res = calVapourPressureEq1(_eqParams, T)
-                    _Vp.append(_res)
+                    # * get eq parameters
+                    eqData = [{"eqParams": [item['A'], item['B'], item['C']], "eqExpr": item['expr']}
+                              for item in loadData if i == item['component-symbol']]
+                    if len(eqData) > 0:
+                        # set
+                        _eqData = eqData[0]
+                        # REVIEW
+                        # eq1
+                        _eqParams = _eqData.get('eqParams')
+                        _eqExpr = _eqData.get('eqExpr')
+                        _res = calVapourPressureEq1(_eqParams, T)
+                        _Vp.append(_res)
                 elif _eqIdSet == "eq2":
-                    # REVIEW
-                    # eq2
-                    # _eqExpr = _eqData.get('eqExpr')
-                    # build fun
-                    # _res = calGasVisEq2(_eqExpr, T)
-                    # _Vp.append(_res)
+                    # * get eq parameters
+                    eqData = [{"eqParams": [item['C1'], item['C2'], item['C3'], item['C4'], item['C5']]}
+                              for item in loadData if i == item['component-symbol']]
+                    if len(eqData) > 0:
+                        # set
+                        _eqData = eqData[0]
+                        # REVIEW
+                        # eq1
+                        _eqParams = _eqData.get('eqParams')
+                        _res = calVapourPressureEq2(_eqParams, T)
+                        _Vp.append(_res)
                     pass
                 else:
                     print('data not found, update app database!')

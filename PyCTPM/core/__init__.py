@@ -5,3 +5,4 @@ from PyCTPM.core.utilities import removeDuplicatesList, comp, loadAllData, loadG
 from PyCTPM.core.constants import Tref, R_CONST, RAOULT_MODEL, MODIFIED_RAOULT_MODEL
 # package
 from PyCTPM.core.package import PackInfo
+from PyCTPM.core.loaddata import LoaddataClass

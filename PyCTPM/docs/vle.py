@@ -151,7 +151,7 @@ class VLEClass(ExcessProperties, Margules):
                 2. system pressure [Pa]
             config:
                 1. Tg0: initial guess temperature
-                2. VaPeCal: vapor-pressure calculation method (default: antoine)
+                2. VaPeCal: vapor-pressure calculation method (default: polynomial)
 
         knowns:
             1. P
@@ -174,7 +174,7 @@ class VLEClass(ExcessProperties, Margules):
             P = params.get('P', 0)
 
             # config
-            VaPeCal = config.get('VaPeCal', 'antoine')
+            VaPeCal = config.get('VaPeCal', 'polynomial')
             Tg0 = config.get('Tg0', 295)
 
             # params
@@ -244,7 +244,7 @@ class VLEClass(ExcessProperties, Margules):
                 2. system pressure [Pa]
             config:
                 1. Tg0: initial guess temperature
-                2. VaPeCal: vapor-pressure calculation method (default: antoine)
+                2. VaPeCal: vapor-pressure calculation method (default: polynomial)
 
         knowns:
             1. P
@@ -267,7 +267,7 @@ class VLEClass(ExcessProperties, Margules):
             P = params.get('P', 0)
 
             # config
-            VaPeCal = config.get('VaPeCal', 'antoine')
+            VaPeCal = config.get('VaPeCal', 'polynomial')
             Tg0 = config.get('Tg0', 295)
 
             # params
@@ -378,7 +378,7 @@ class VLEClass(ExcessProperties, Margules):
             VaPri = params.get('VaPe', [])
 
             # config
-            VaPeCal = config.get('VaPeCal', 'antoine')
+            VaPeCal = config.get('VaPeCal', 'polynomial')
             V_F_ratio_g0 = config.get('guess_V_F_ratio', 0.5)
 
             # ki ratio (Raoult's law)
@@ -466,7 +466,7 @@ class VLEClass(ExcessProperties, Margules):
             VaPri = params.get('VaPe', [])
 
             # config
-            VaPeCal = config.get('VaPeCal', 'antoine')
+            VaPeCal = config.get('VaPeCal', 'polynomial')
 
             # ki ratio (Raoult's law)
             Ki = VaPri/P_flash
@@ -593,3 +593,56 @@ class VLEClass(ExcessProperties, Margules):
 
         # res
         return AcCo
+
+    def MargulesParameterObjectiveFunction(self, x, params):
+        '''
+        Margules 1-parameter function
+
+            args:
+                x: Aij *** array ***
+                params:
+        '''
+        # params
+        xi_exp, ExMoGiEn_exp, parameterNo = params
+
+        # number of experimental data
+        expDataNo = xi_exp.shape[0]
+
+        # calculate excess molar gibbs energy
+        ExMoGiEn_cal = np.zeros(expDataNo)
+        for i in range(expDataNo):
+            # xi
+            _xi = xi_exp[i, :]
+
+            # calculate activity coefficient
+            _AcCo = self.Margules_activity_coefficient(_xi, x)
+
+            ExMoGiEn_cal[i] = self.ExcessMolarGibbsFreeEnergy(_xi, _AcCo)
+
+        # obj function
+        return ExMoGiEn_exp - ExMoGiEn_cal
+
+    def margulesParameterEstimator(self, params):
+        '''
+        parameter estimation of Margules model for a binary system
+
+        args:
+            params:
+                1. liquid mole fraction 
+                2. excess molar gibbs energy
+                3. margules model (1-2 parameter)
+
+        '''
+        # ! check
+        xi_exp, ExMoGiEn, parameterNo = params
+
+        # initial guess
+        if parameterNo == 1:
+            A0 = 0.5
+        elif parameterNo == 2:
+            A0 = [0.5, 0.5]
+
+        res = optimize.least_squares(
+            self.MargulesParameterObjectiveFunction, A0, args=(params,))
+
+        return res

@@ -10,6 +10,7 @@ from PyCTPM.docs.vle import VLEClass
 from PyCTPM.results import Display
 from PyCTPM.core import roundNum
 from PyCTPM.results import Visual
+from PyCTPM.core import LoaddataClass
 
 
 class Pool(VLEClass, Display):
@@ -28,14 +29,14 @@ class Pool(VLEClass, Display):
     def component_list(self):
         return self.componentList
 
-    def bubble_pressure(self, mole_fractions, temperature, vapor_pressure_method='antoine', model='raoult', activity_coefficient_model='van-laar'):
+    def bubble_pressure(self, mole_fractions, temperature, vapor_pressure_method='polynomial', model='raoult', activity_coefficient_model='van-laar'):
         '''
         bubble pressure calculation
 
         args:
             mole_fraction: feed mole fraction (zi=xi)
             temperature: flash temperature [K]
-            vapor_pressure_method: vapor-pressure method (default: antoine)
+            vapor_pressure_method: vapor-pressure method (default: polynomial)
             activity_coefficient_config: 
                 1. model name 
                     a) Margules equation
@@ -65,7 +66,7 @@ class Pool(VLEClass, Display):
     def dew_pressure(self):
         pass
 
-    def bubble_temperature(self, mole_fractions, pressure, guess_temperature=350, vapor_pressure_method='antoine'):
+    def bubble_temperature(self, mole_fractions, pressure, guess_temperature=350, vapor_pressure_method='polynomial'):
         '''
         bubble temperature calculation
 
@@ -91,7 +92,7 @@ class Pool(VLEClass, Display):
         # res
         return _res
 
-    def dew_temperature(self, mole_fractions, pressure, guess_temperature=350, vapor_pressure_method='antoine'):
+    def dew_temperature(self, mole_fractions, pressure, guess_temperature=350, vapor_pressure_method='polynomial'):
         '''
         bubble temperature calculation
 
@@ -117,7 +118,7 @@ class Pool(VLEClass, Display):
         # res
         return _res
 
-    def flash_isothermal(self, mole_fractions, flash_pressure, flash_temperature, feed_pressure, feed_flowrate=1, guess_V_F_ratio=0.5, vapor_pressure_method='antoine', model="raoult", activity_coefficient_model='van-laar'):
+    def flash_isothermal(self, mole_fractions, flash_pressure, flash_temperature, feed_pressure, feed_flowrate=1, guess_V_F_ratio=0.5, vapor_pressure_method='polynomial', model="raoult", activity_coefficient_model='van-laar'):
         '''
         isothermal flash calculation
 
@@ -215,7 +216,7 @@ class Pool(VLEClass, Display):
         # res
         return flashState, BuPr, DePr, VaPr, V_F_ratio, L_F_ratio, xi, yi
 
-    def Txy_binary(self, pressure, guess_temperature=350, vapor_pressure_method='antoine', model="raoult", zi_no=10):
+    def Txy_binary(self, pressure, guess_temperature=350, vapor_pressure_method='polynomial', model="raoult", zi_no=10):
         '''
         bubble temperature calculation
 
@@ -223,7 +224,7 @@ class Pool(VLEClass, Display):
             mole_fraction: feed mole fraction (zi=xi)
             pressure: system pressure [Pa]
             guess_temperature: 
-            vapor_pressure_method: vapor-pressure calculation method (default: antoine)
+            vapor_pressure_method: vapor-pressure calculation method (default: polynomial)
             model: thermodynamic model for equilibrium system (default: raoult)
             zi_no: number of mole fractions
         '''
@@ -276,14 +277,14 @@ class Pool(VLEClass, Display):
         # res
         return _res
 
-    def Pxy_binary(self, temperature,  vapor_pressure_method='antoine', model="modified-raoult", zi_no=10):
+    def Pxy_binary(self, temperature,  vapor_pressure_method='polynomial', model="modified-raoult", zi_no=10):
         '''
         bubble temperature calculation
 
         args:
             mole_fraction: feed mole fraction (zi=xi)
             temperature: system (fixed) temperature [K]
-            vapor_pressure_method: vapor-pressure calculation method (default: antoine)
+            vapor_pressure_method: vapor-pressure calculation method (default: polynomial)
             model: thermodynamic model for equilibrium system (default: raoult)
             zi_no: number of mole fractions
         '''
@@ -337,7 +338,7 @@ class Pool(VLEClass, Display):
         # res
         return _res
 
-    def Margules_1Parameter(self, liquid_mole_fraction, vapor_mole_fraction, pressure, temperature,  vapor_pressure_method='antoine'):
+    def Margules_1Parameter(self, liquid_mole_fraction, vapor_mole_fraction, pressure, temperature,  vapor_pressure_method='polynomial'):
         '''
         find Margules 1-parameter based on experimental results for a binary system
 
@@ -376,3 +377,104 @@ class Pool(VLEClass, Display):
 
         except Exception as e:
             pass
+
+    def Margules_parameter_estimation(self, csv_file, mode="2-parameter", vapor_pressure_method='polynomial', plot_result=True):
+        '''
+        estimate Margules parameters for a *** binary system ***
+
+        args:
+            csv_file: csv file path with data format as:
+                1. no
+                2. T: fixed temperature [K]
+                3. P: measured pressure [Pa]
+                4. x1: liquid mole fraction component 1
+                5. y1: vapor mole fraction component 1
+
+        '''
+        np_data, df_data, rowNo, colNo, colsName = LoaddataClass.load_csv_to_df(
+            csv_file)
+
+        # parameters
+        parameterNo = 0
+
+        # ! check
+        if mode == '2-parameter':
+            # set
+            parameterNo = 2
+        else:
+            # set
+            parameterNo = 1
+
+        # calculate activity coefficient using modified-raoult's law
+        AcCo = np.zeros((rowNo, 2))
+        ExMoGiEn = np.zeros(rowNo)
+        xi = np.zeros((rowNo, 2))
+
+        for i in range(rowNo):
+            # check for x1=0, activity coefficient is not defined
+            if i > 0 and i < rowNo-1:
+                # set
+                _T = float(np_data[i, 1])
+                _P = float(np_data[i, 2])
+                # component 1
+                _x1 = float(np_data[i, 3])
+                _y1 = float(np_data[i, 4])
+                # component 2
+                _x2 = 1 - _x1
+                _y2 = 1 - _y1
+                # mix
+                xi[i, 0] = _x1
+                xi[i, 1] = _x2
+
+                # for component 1
+                # vapor-pressure at T
+                _VaPr1 = self.pool[0].vapor_pressure(
+                    _T, vapor_pressure_method)
+
+                # activity coefficient
+                _AcCo1 = (_y1*_P)/(_x1*_VaPr1)
+                AcCo[i, 0] = _AcCo1
+
+                # for component 2
+                # vapor-pressure at T
+                _VaPr2 = self.pool[1].vapor_pressure(
+                    _T, vapor_pressure_method)
+
+                # activity coefficient
+                _AcCo2 = (_y2*_P)/(_x2*_VaPr2)
+                AcCo[i, 1] = _AcCo2
+
+                # calculate excess molar gibbs energy
+                ExMoGiEn[i] = self.ExcessMolarGibbsFreeEnergy(
+                    xi[i, :], AcCo[i, :])
+
+        # params
+        params = (xi[1:-1, :], ExMoGiEn[1:-1], parameterNo)
+
+        # call optimizer fun
+        res = self.margulesParameterEstimator(params)
+
+        if res.success is True:
+            Aij = res.x
+
+            # use for the model
+            ExMoGiEn_model = np.zeros(rowNo)
+            AcCo_model = np.zeros((rowNo, 2))
+
+            for i in range(rowNo):
+                if i > 0 and i < rowNo-1:
+                    # activity coefficient using the model
+                    AcCo_model[i, :] = self.Margules_activity_coefficient(
+                        xi[i, :], Aij)
+
+                    ExMoGiEn_model[i] = self.ExcessMolarGibbsFreeEnergy(
+                        xi[i, :], AcCo_model[i, :])
+
+        # plot
+        if plot_result is True:
+            plt.plot(xi[1:-1, 0], ExMoGiEn[1:-1], 'o')
+            plt.plot(xi[1:-1, 0], ExMoGiEn_model[1:-1], 'b-')
+            plt.show()
+
+        # res
+        return Aij
