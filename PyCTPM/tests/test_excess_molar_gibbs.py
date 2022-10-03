@@ -13,9 +13,11 @@ from PyCTPM import component, pool, is_component_available, ExcessProperties
 # comp1 = component("water")
 # comp2 = component("ethanol")
 
-comp1 = component("di-isopropyl-ether")
-comp2 = component("1-propanol")
+# comp1 = component("di-isopropyl-ether")
+# comp2 = component("1-propanol")
 
+comp1 = component("ethanol")
+comp2 = component("methylbutyl-ether")
 
 # ! VLE
 # define a binary system
@@ -57,7 +59,6 @@ xi_exp_2 = [0.2, 1-0.2]
 
 #! load csv data (P,xi,y1) for binary system
 csvFile = r'E:\Web App\CTPM\data\Pxy1.csv'
+#! Margules two-parameter
 res0 = pool1.Margules_parameter_estimation(csvFile, mode='2-parameter')
 print(res0)
-
-#! Margules two-parameter

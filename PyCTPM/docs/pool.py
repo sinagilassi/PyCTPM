@@ -406,52 +406,23 @@ class Pool(VLEClass, Display):
             parameterNo = 1
 
         # calculate activity coefficient using modified-raoult's law
-        AcCo = np.zeros((rowNo, 2))
         ExMoGiEn = np.zeros(rowNo)
-        xi = np.zeros((rowNo, 2))
+
+        # interpret Pxy data (binary system)
+        AcCo, xi = LoaddataClass.Pxy_BinarySystemInterpretData(
+            self.pool, np_data, rowNo, vapor_pressure_method)
 
         for i in range(rowNo):
             # check for x1=0, activity coefficient is not defined
             if i > 0 and i < rowNo-1:
-                # set
-                _T = float(np_data[i, 1])
-                _P = float(np_data[i, 2])
-                # component 1
-                _x1 = float(np_data[i, 3])
-                _y1 = float(np_data[i, 4])
-                # component 2
-                _x2 = 1 - _x1
-                _y2 = 1 - _y1
-                # mix
-                xi[i, 0] = _x1
-                xi[i, 1] = _x2
-
-                # for component 1
-                # vapor-pressure at T
-                _VaPr1 = self.pool[0].vapor_pressure(
-                    _T, vapor_pressure_method)
-
-                # activity coefficient
-                _AcCo1 = (_y1*_P)/(_x1*_VaPr1)
-                AcCo[i, 0] = _AcCo1
-
-                # for component 2
-                # vapor-pressure at T
-                _VaPr2 = self.pool[1].vapor_pressure(
-                    _T, vapor_pressure_method)
-
-                # activity coefficient
-                _AcCo2 = (_y2*_P)/(_x2*_VaPr2)
-                AcCo[i, 1] = _AcCo2
-
                 # calculate excess molar gibbs energy
                 ExMoGiEn[i] = self.ExcessMolarGibbsFreeEnergy(
                     xi[i, :], AcCo[i, :])
 
+        #! call optimizer fun
         # params
         params = (xi[1:-1, :], ExMoGiEn[1:-1], parameterNo)
 
-        # call optimizer fun
         res = self.margulesParameterEstimator(params)
 
         if res.success is True:
@@ -478,3 +449,42 @@ class Pool(VLEClass, Display):
 
         # res
         return Aij
+
+    def Wilson_parameter_estimation(self, csv_file, vapor_pressure_method='polynomial', plot_result=True):
+        '''
+        estimate Margules parameters for a *** binary system ***
+
+        args:
+            csv_file: csv file path with data format as:
+                1. no
+                2. T: fixed temperature [K]
+                3. P: measured pressure [Pa]
+                4. x1: liquid mole fraction component 1
+                5. y1: vapor mole fraction component 1
+
+        '''
+        # calculate activity coefficient using modified-raoult's law
+        ExMoGiEn = np.zeros(rowNo)
+
+        np_data, df_data, rowNo, colNo, colsName = LoaddataClass.load_csv_to_df(
+            csv_file)
+
+        # interpret Pxy data (binary system)
+        AcCo, xi = LoaddataClass.Pxy_BinarySystemInterpretData(
+            self.pool, np_data, rowNo, vapor_pressure_method)
+
+        for i in range(rowNo):
+            # check for x1=0, activity coefficient is not defined
+            if i > 0 and i < rowNo-1:
+                # calculate excess molar gibbs energy
+                ExMoGiEn[i] = self.ExcessMolarGibbsFreeEnergy(
+                    xi[i, :], AcCo[i, :])
+
+        #! call optimizer fun
+        # params
+        params = (xi[1:-1, :], ExMoGiEn[1:-1])
+
+        res = self.margulesParameterEstimator(params)
+
+        if res.success is True:
+            Aij = res.x

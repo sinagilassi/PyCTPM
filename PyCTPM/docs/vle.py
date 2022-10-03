@@ -646,3 +646,31 @@ class VLEClass(ExcessProperties, Margules):
             self.MargulesParameterObjectiveFunction, A0, args=(params,))
 
         return res
+
+    def WilsonParameterObjectiveFunction(self, x, params):
+        '''
+        Wilson function
+
+            args:
+                x: Aij *** array ***
+                params:
+        '''
+        # params
+        xi_exp, ExMoGiEn_exp, parameterNo = params
+
+        # number of experimental data
+        expDataNo = xi_exp.shape[0]
+
+        # calculate excess molar gibbs energy
+        ExMoGiEn_cal = np.zeros(expDataNo)
+        for i in range(expDataNo):
+            # xi
+            _xi = xi_exp[i, :]
+
+            # calculate activity coefficient
+            _AcCo = self.Margules_activity_coefficient(_xi, x)
+
+            ExMoGiEn_cal[i] = self.ExcessMolarGibbsFreeEnergy(_xi, _AcCo)
+
+        # obj function
+        return ExMoGiEn_exp - ExMoGiEn_cal

@@ -879,6 +879,25 @@ def RackettEquation(Vc, Zc, Tr):
     return Vc*pow(Zc, _ZcPower)
 
 
+def ModifiedRackettEquation(T, Pc, Tc, w):
+    '''
+    estimation of saturated liquid volume
+
+    args:
+        T: temperature [K]
+        Pc: critical pressure [Pa]
+        Tc: critical temperature [K]
+        w: acentric factor
+    '''
+    _c0 = R_CONST*Tc/Pc
+    ZRA = 0.2956 - 0.08775*w
+    Tr = T/Tc
+    _c1 = 1 + pow(1-Tr, 2/7)
+    _c2 = _c0*pow(ZRA, _c1)
+
+    return _c2
+
+
 def calAcentricFactor():
     pass
 
