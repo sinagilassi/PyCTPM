@@ -102,4 +102,4 @@ class LoaddataClass:
                 AcCo[i, 1] = _AcCo2
 
         # res
-        return AcCo, xi
+        return AcCo, xi, _T

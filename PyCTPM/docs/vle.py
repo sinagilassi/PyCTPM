@@ -2,16 +2,20 @@
 # --------------------------------------------
 
 # packages/modules
+from ast import arg
+from math import exp, log
 import numpy as np
 from scipy import optimize
 # local
-from PyCTPM.core.constants import MODIFIED_RAOULT_MODEL
+from PyCTPM.core.constants import MODIFIED_RAOULT_MODEL, R_CONST, VAN_LAAR_ACTIVITY_MODEL, WILSON_ACTIVITY_MODEL
+from PyCTPM.docs.dThermo import ModifiedRackettEquation
 from PyCTPM.docs.excessproperties import ExcessProperties
 from PyCTPM.docs.eos import eosClass
 from PyCTPM.docs.margules import Margules
+from PyCTPM.docs.activity import ActivityClass
 
 
-class VLEClass(ExcessProperties, Margules):
+class VLEClass(ExcessProperties, Margules, ActivityClass):
     '''
     vapor-liquid equilibrium calculation
     '''
@@ -24,10 +28,25 @@ class VLEClass(ExcessProperties, Margules):
         # init class
         ExcessProperties.__init__(self, pool)
         Margules.__init__(self, pool)
+        ActivityClass.__init__(self, pool)
 
     def bubblePressure(self, params, config):
         '''
         bubble pressure calculation
+
+        args:
+            params:
+                1. zi
+                2. T
+            config:
+                1. VaPeCal: vapor pressure calculation method
+                2. model: vle model
+                3. AcCoModel: activity coefficient model
+                    1. name:
+                        a) van laar: using eos to predict activity coefficient
+                        b) wilson: needs parameters
+                    2. params:
+                        a) wilson: aij ~ alpha_ij
 
         knowns:
             1. T
@@ -50,16 +69,25 @@ class VLEClass(ExcessProperties, Margules):
             # config
             VaPeCal = config.get('VaPeCal')
             model = config.get('model')
+            AcCoModel = config.get('AcCoModel')
+            AcCoModelName = AcCoModel.get('name', 0)
+            AcCoModelParameters = AcCoModel.get('params', 0)
 
             # activity coefficient
             if model == MODIFIED_RAOULT_MODEL:
-                # set eos class
-                ai, bi = eosClass.abVDM(self.pool)
-                # set excess properties class
-                # ExcessPropertiesClass = ExcessProperties(self.pool)
-                # activity coefficient
-                AcCo = self.VanLaar_activity_coefficient(
-                    zi, ai, bi, T)
+                # !check
+                if AcCoModelName == VAN_LAAR_ACTIVITY_MODEL:
+                    # ! using eos to calculate activity-model
+                    # set eos class
+                    ai, bi = eosClass.abVDM(self.pool)
+                    # set excess properties class
+                    # ExcessPropertiesClass = ExcessProperties(self.pool)
+                    # activity coefficient
+                    AcCo = self.VanLaar_activity_coefficient(
+                        zi, ai, bi, T)
+                elif AcCoModelName == WILSON_ACTIVITY_MODEL:
+                    AcCo = self.Wilson_activity_coefficient(
+                        zi, T, AcCoModelParameters)
             else:
                 # equals unity for ideal solution
                 AcCo = np.ones(self.compNo)
@@ -656,7 +684,7 @@ class VLEClass(ExcessProperties, Margules):
                 params:
         '''
         # params
-        xi_exp, ExMoGiEn_exp, parameterNo = params
+        xi_exp, ExMoGiEn_exp = params
 
         # number of experimental data
         expDataNo = xi_exp.shape[0]
@@ -668,9 +696,140 @@ class VLEClass(ExcessProperties, Margules):
             _xi = xi_exp[i, :]
 
             # calculate activity coefficient
-            _AcCo = self.Margules_activity_coefficient(_xi, x)
+            _AcCo = self.wilson_activity_coefficient_parameter_estimation(
+                _xi, x)
 
             ExMoGiEn_cal[i] = self.ExcessMolarGibbsFreeEnergy(_xi, _AcCo)
 
         # obj function
         return ExMoGiEn_exp - ExMoGiEn_cal
+
+    def WilsonTemperatureIndependentParametersFunction(self, x, params):
+        '''
+        find temperature-independent parameters (alpha)
+
+        *** alpha is constant ***
+
+        args:
+            x: alpha[i,j]
+            params:
+                1. MoVoi: molar-volume [m^3/mol]
+                2. Aij: temperature-dependent parameters
+                3. T: temperature [K]
+        '''
+        # params
+        MoVoi, Aij, T = params
+
+        # vars
+        alpha_ij = np.zeros((self.compNo, self.compNo))
+        y = []
+        k = 0
+
+        # set
+        for i in range(self.compNo):
+            for j in range(self.compNo):
+                if i != j:
+                    alpha_ij[i, j] = x[k]
+                    k += 1
+
+        for i in range(self.compNo):
+            for j in range(self.compNo):
+                if i != j:
+                    _y = Aij[i, j] - (MoVoi[j]/MoVoi[i]) * \
+                        exp(-1*alpha_ij[i, j]/(R_CONST*T))
+                    y.append(_y)
+
+        # res
+        return y
+
+    def WilsonParameterEstimator(self, params):
+        '''
+        parameter estimation of wilson model for a binary system
+
+        the parameters are:
+            1. Aij (All ‘cross’ parameters are equal to each other)
+                unknownNo: component number
+            2. alpha_ij (is temperature independent)
+
+        args:
+            params:
+                1. liquid mole fraction 
+                2. excess molar gibbs energy
+
+        '''
+        # ! check
+        xi_exp, ExMoGiEn, T = params
+
+        # vars
+        MoVoi = np.zeros(self.compNo)
+
+        # molar volume [m^3/mol]
+        for i in range(self.compNo):
+            _comp = self.components[i]
+            _Pc = float(_comp.Pc)*1e5
+            _Tc = _comp.Tc
+            _w = _comp.w
+            MoVoi[i] = ModifiedRackettEquation(T, _Pc, _Tc, _w)
+
+        #! least-square function for Aij
+        fun1 = self.WilsonParameterObjectiveFunction
+
+        # initial guess (number of unknown parameters)
+        A0 = 0.1*np.ones(self.compNo)
+
+        # params
+        params1 = (xi_exp, ExMoGiEn)
+
+        # bounds
+        unknownNo = self.compNo
+        bU = []
+        bL = []
+        bounds = []
+        # lower
+        for i in range(unknownNo):
+            _bl = 0
+            bL.append(_bl)
+
+        # upper
+        for i in range(unknownNo):
+            _bu = 3
+            bU.append(_bu)
+
+        bounds = [bL, bU]
+
+        res0 = optimize.least_squares(
+            fun1, A0, args=(params1,), bounds=bounds)
+
+        # temperature-dependent parameters
+        Aij = np.ones((self.compNo, self.compNo))
+
+        # * check
+        if res0.success is True:
+            X = res0.x
+            k = 0
+            for i in range(self.compNo):
+                for j in range(self.compNo):
+                    if i != j:
+                        Aij[i, j] = X[k]
+                        k += 1
+        else:
+            return []
+
+        #! solve nonlinear equation for alpha_ij
+        fun2 = self.WilsonTemperatureIndependentParametersFunction
+        # initial guess
+        alpha0_ij = 0.1*np.ones(self.compNo)
+        # params
+        params2 = (MoVoi, Aij, T)
+        res = optimize.fsolve(fun2, alpha0_ij, args=(params2,), )
+
+        # set
+        aij = np.zeros((self.compNo, self.compNo))
+        k = 0
+        for i in range(self.compNo):
+            for j in range(self.compNo):
+                if i != j:
+                    aij[i, j] = res[k]
+                    k += 1
+
+        return aij

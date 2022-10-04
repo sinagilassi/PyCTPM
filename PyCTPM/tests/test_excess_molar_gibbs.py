@@ -30,7 +30,7 @@ MoFr = [0.5, 0.5]
 # system pressure [Pa]
 P1 = 101.325*1e3
 # temperature [K]
-T = 313.15
+T = 323.15
 
 #! activity coefficient
 # res1 = ExcessProperties(compList1, MoFr)
@@ -59,6 +59,23 @@ xi_exp_2 = [0.2, 1-0.2]
 
 #! load csv data (P,xi,y1) for binary system
 csvFile = r'E:\Web App\CTPM\data\Pxy1.csv'
+csvFile2 = r'E:\Web App\CTPM\data\Pxy2.csv'
 #! Margules two-parameter
-res0 = pool1.Margules_parameter_estimation(csvFile, mode='2-parameter')
+# res0 = pool1.Margules_parameter_estimation(csvFile, mode='2-parameter')
+# print(res0)
+
+#! Wilson equation
+res0 = pool1.Wilson_parameter_estimation(csvFile2, plot_result=False)
 print(res0)
+
+# define activity coefficient model
+AcCoModel = {
+    'name': 'wilson',
+    'params': res0
+}
+res2 = pool1.Pxy_binary(T, model='modified-raoult',
+                        activity_coefficient_model=AcCoModel)
+print(res2)
+
+# activity coefficient at different temperature
+# res1 = pool1.wilson_activity_coefficient()

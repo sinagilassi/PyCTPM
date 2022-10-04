@@ -13,6 +13,11 @@ VAN_DER_WAALS = "VDW"
 RAOULT_MODEL = 'raoult'
 MODIFIED_RAOULT_MODEL = 'modified-raoult'
 
+# ! activity coefficient model
+VAN_LAAR_ACTIVITY_MODEL = 'van-laar'
+WILSON_ACTIVITY_MODEL = 'wilson'
+
+
 # universal gas constant [J/mol.K]
 R_CONST = 8.314472
 

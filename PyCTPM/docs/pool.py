@@ -277,7 +277,7 @@ class Pool(VLEClass, Display):
         # res
         return _res
 
-    def Pxy_binary(self, temperature,  vapor_pressure_method='polynomial', model="modified-raoult", zi_no=10):
+    def Pxy_binary(self, temperature,  vapor_pressure_method='polynomial', model="modified-raoult", activity_coefficient_model={}, zi_no=10):
         '''
         bubble temperature calculation
 
@@ -286,6 +286,10 @@ class Pool(VLEClass, Display):
             temperature: system (fixed) temperature [K]
             vapor_pressure_method: vapor-pressure calculation method (default: polynomial)
             model: thermodynamic model for equilibrium system (default: raoult)
+            activity_coefficient_model: 
+                1. model 
+                    1. 
+                2. parameters
             zi_no: number of mole fractions
         '''
         #  feed mole fraction
@@ -307,7 +311,8 @@ class Pool(VLEClass, Display):
             # config
             config = {
                 "VaPeCal": vapor_pressure_method,
-                "model": model
+                "model": model,
+                "AcCoModel": activity_coefficient_model
             }
 
             # ! check vle model
@@ -450,7 +455,7 @@ class Pool(VLEClass, Display):
         # res
         return Aij
 
-    def Wilson_parameter_estimation(self, csv_file, vapor_pressure_method='polynomial', plot_result=True):
+    def Wilson_parameter_estimation(self, csv_file, vapor_pressure_method='polynomial', plot_result=True, aij_bounds=[0, 10]):
         '''
         estimate Margules parameters for a *** binary system ***
 
@@ -461,16 +466,23 @@ class Pool(VLEClass, Display):
                 3. P: measured pressure [Pa]
                 4. x1: liquid mole fraction component 1
                 5. y1: vapor mole fraction component 1
+            vapor_pressure_method: vapor pressure method
+            plot_result: to display results (default: true)
+            aij_bounds: alpha[i,j] lower and upper bounds
+
+        return:
+            alpha: composition-independent parameters
+            that describe how the interactions between the unlike components differ from the like components
 
         '''
-        # calculate activity coefficient using modified-raoult's law
-        ExMoGiEn = np.zeros(rowNo)
-
         np_data, df_data, rowNo, colNo, colsName = LoaddataClass.load_csv_to_df(
             csv_file)
 
+        # calculate activity coefficient using modified-raoult's law
+        ExMoGiEn = np.zeros(rowNo)
+
         # interpret Pxy data (binary system)
-        AcCo, xi = LoaddataClass.Pxy_BinarySystemInterpretData(
+        AcCo, xi, T = LoaddataClass.Pxy_BinarySystemInterpretData(
             self.pool, np_data, rowNo, vapor_pressure_method)
 
         for i in range(rowNo):
@@ -482,9 +494,29 @@ class Pool(VLEClass, Display):
 
         #! call optimizer fun
         # params
-        params = (xi[1:-1, :], ExMoGiEn[1:-1])
+        params = (xi[1:-1, :], ExMoGiEn[1:-1], T)
 
-        res = self.margulesParameterEstimator(params)
+        aij = self.WilsonParameterEstimator(params)
 
-        if res.success is True:
-            Aij = res.x
+        # REVIEW
+        # use for the model
+        ExMoGiEn_model = np.zeros(rowNo)
+        AcCo_model = np.zeros((rowNo, 2))
+
+        for i in range(rowNo):
+            if i > 0 and i < rowNo-1:
+                # activity coefficient using the model
+                AcCo_model[i, :] = self.Wilson_activity_coefficient(
+                    xi[i, :], T, aij)
+
+                ExMoGiEn_model[i] = self.ExcessMolarGibbsFreeEnergy(
+                    xi[i, :], AcCo_model[i, :])
+
+        # plot
+        if plot_result is True:
+            plt.plot(xi[1:-1, 0], ExMoGiEn[1:-1], 'o')
+            plt.plot(xi[1:-1, 0], ExMoGiEn_model[1:-1], 'b-')
+            plt.show()
+
+        # res
+        return aij
