@@ -65,7 +65,6 @@ class ActivityClass:
                 xk_Aki[i, k] = _c0/_c1
 
             _c3 = 1 - log(np.sum(xj_Aij[i, :])) - np.sum(xk_Aki[i, :])
-            # _c3 = 1 - log(_c2) - np.sum(xk_Aki[i, :])
             AcCoi[i] = exp(_c3)
 
         # res
@@ -165,3 +164,87 @@ class ActivityClass:
         # # res
         # return c1
         pass
+
+    @staticmethod
+    def NRTL_activity_coefficient_parameter_estimation(xi, res_aij, res_taij):
+        '''
+        Non-random two-liquid model
+
+        res_aij: non-randomness parameter (a[i,j]=a[j,i])
+        res_taij: temperature dependent parameters (ta[i,i]=ta[j,j]=0)
+        gij: interaction energy parameter
+
+        args:
+            xi: mole fraction
+            Aij: temperature dependence of the parameters
+
+        return:
+            AcCo: activity coefficient
+        '''
+        # component no
+        compNo = xi.shape[0]
+
+        # non-randomness parameter
+        aij = np.ones((compNo, compNo))
+        k = 0
+        for i in range(compNo):
+            for j in range(compNo):
+                if i != j:
+                    aij[i, j] = res_aij[k]
+                    aij[j, i] = res_aij[k]
+                    k += 1
+
+        # temperature dependent parameters
+        taij = np.zeros((compNo, compNo))
+        k = 0
+        for i in range(compNo):
+            for j in range(compNo):
+                if i != j:
+                    taij[i, j] = res_taij[k]
+                    k += 1
+
+        # dependent parameters
+        Gij = np.ones((compNo, compNo))
+        k = 0
+        for i in range(compNo):
+            for j in range(compNo):
+                if i != j:
+                    Gij[i, j] = exp(-1*aij[i, j]*taij[i, j])
+                    k += 1
+
+        # activity coefficient
+        AcCoi = np.zeros(compNo)
+
+        # activity coefficient
+        C0 = np.zeros((compNo, compNo))
+
+        for i in range(compNo):
+            _c0 = 0
+            for j in range(compNo):
+                _c0 = taij[j, i]*Gij[j, i]*xi[j] + _c0
+
+            _c1 = 0
+            for k in range(compNo):
+                _c1 = Gij[k, i]*xi[k] + _c1
+
+            for j in range(compNo):
+                _c2 = xi[j]*Gij[i, j]
+
+                _c3 = 0
+                for k in range(compNo):
+                    _c3 = Gij[k, j]*xi[k] + _c3
+
+                _c4 = 0
+                for n in range(compNo):
+                    _c4 = xi[n]*taij[n, j]*Gij[n, j] + _c4
+
+                _c5 = taij[i, j] - (_c4/_c3)
+
+                # set
+                C0[i, j] = (_c2/_c3)*_c5
+
+            _c6 = (_c0/_c1) + np.sum(C0[i, :])
+            AcCoi[i] = exp(_c6)
+
+        # res
+        return AcCoi

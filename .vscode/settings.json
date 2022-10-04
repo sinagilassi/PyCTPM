@@ -8,6 +8,7 @@
     "raoult",
     "Rootf",
     "scipy",
+    "taij",
     "vaporpressure"
   ],
   "python.pythonPath": "venv\\Scripts\\python.exe",
