@@ -457,7 +457,7 @@ class Pool(VLEClass, Display):
 
     def Wilson_parameter_estimation(self, csv_file, vapor_pressure_method='polynomial', plot_result=True, aij_bounds=[0, 10]):
         '''
-        estimate Margules parameters for a *** binary system ***
+        estimate wilson parameters for a *** binary system ***
 
         args:
             csv_file: csv file path with data format as:
@@ -520,3 +520,77 @@ class Pool(VLEClass, Display):
 
         # res
         return aij
+
+    def NRTL_parameter_estimation(self, csv_file, vapor_pressure_method='polynomial', plot_result=True, bounds=[[-5, 5], [0, 5]]):
+        '''
+        estimate NRTL parameters for a *** multi-component system ***
+
+        args:
+            csv_file: csv file path with data format as:
+                1. no
+                2. T: fixed temperature [K]
+                3. P: measured pressure [Pa]
+                4. x1: liquid mole fraction component 1
+                5. y1: vapor mole fraction component 1
+            vapor_pressure_method: vapor pressure method
+            plot_result: to display results (default: true)
+            bounds: lower and upper bounds for
+                a) taij: temperature dependent parameter
+                b) aij: randomness parameter
+                c) gij: interaction energy parameter
+
+        return:
+            taij: temperature dependent parameter
+            aij: randomness parameter
+            gij: interaction energy parameter
+
+        '''
+        np_data, df_data, rowNo, colNo, colsName = LoaddataClass.load_csv_to_df(
+            csv_file)
+
+        # calculate activity coefficient using modified-raoult's law
+        ExMoGiEn = np.zeros(rowNo)
+
+        # interpret Pxy data (binary system)
+        AcCo, xi, T = LoaddataClass.Pxy_BinarySystemInterpretData(
+            self.pool, np_data, rowNo, vapor_pressure_method)
+
+        for i in range(rowNo):
+            # check for x1=0, activity coefficient is not defined
+            if i > 0 and i < rowNo-1:
+                # calculate excess molar gibbs energy
+                ExMoGiEn[i] = self.ExcessMolarGibbsFreeEnergy(
+                    xi[i, :], AcCo[i, :])
+
+        #! call optimizer fun
+        # params
+        params = (xi[1:-1, :], ExMoGiEn[1:-1], T, bounds)
+        res = self.NRTLParameterEstimator(params)
+
+        # set
+        taij = res['taij']
+        aij = res['aij']
+        gij = res['gij']
+
+        # REVIEW
+        # use for the model
+        ExMoGiEn_model = np.zeros(rowNo)
+        AcCo_model = np.zeros((rowNo, 2))
+
+        for i in range(rowNo):
+            if i > 0 and i < rowNo-1:
+                # activity coefficient using the model
+                AcCo_model[i, :] = self.NRTL_activity_coefficient(
+                    xi[i, :], T, aij, gij)
+
+                ExMoGiEn_model[i] = self.ExcessMolarGibbsFreeEnergy(
+                    xi[i, :], AcCo_model[i, :])
+
+        # plot
+        if plot_result is True:
+            plt.plot(xi[1:-1, 0], ExMoGiEn[1:-1], 'o')
+            plt.plot(xi[1:-1, 0], ExMoGiEn_model[1:-1], 'b-')
+            plt.show()
+
+        # res
+        return res

@@ -166,42 +166,22 @@ class ActivityClass:
         pass
 
     @staticmethod
-    def NRTL_activity_coefficient_parameter_estimation(xi, res_aij, res_taij):
+    def NRTL_activity_coefficient_parameter_estimation(xi, taij, aij):
         '''
         Non-random two-liquid model
 
-        res_aij: non-randomness parameter (a[i,j]=a[j,i])
-        res_taij: temperature dependent parameters (ta[i,i]=ta[j,j]=0)
-        gij: interaction energy parameter
+        gij: interaction energy parameter (calculated later by using temperature)
 
         args:
             xi: mole fraction
-            Aij: temperature dependence of the parameters
+            res_taij: temperature dependent parameters (ta[i,i]=ta[j,j]=0)
+            res_aij: non-randomness parameter (a[i,j]=a[j,i])
 
         return:
             AcCo: activity coefficient
         '''
         # component no
         compNo = xi.shape[0]
-
-        # non-randomness parameter
-        aij = np.ones((compNo, compNo))
-        k = 0
-        for i in range(compNo):
-            for j in range(compNo):
-                if i != j:
-                    aij[i, j] = res_aij[k]
-                    aij[j, i] = res_aij[k]
-                    k += 1
-
-        # temperature dependent parameters
-        taij = np.zeros((compNo, compNo))
-        k = 0
-        for i in range(compNo):
-            for j in range(compNo):
-                if i != j:
-                    taij[i, j] = res_taij[k]
-                    k += 1
 
         # dependent parameters
         Gij = np.ones((compNo, compNo))
@@ -211,6 +191,81 @@ class ActivityClass:
                 if i != j:
                     Gij[i, j] = exp(-1*aij[i, j]*taij[i, j])
                     k += 1
+                else:
+                    Gij[i, j] = 1
+
+        # activity coefficient
+        AcCoi = np.zeros(compNo)
+
+        # activity coefficient
+        C0 = np.zeros((compNo, compNo))
+
+        for i in range(compNo):
+            _c0 = 0
+            for j in range(compNo):
+                _c0 = taij[j, i]*Gij[j, i]*xi[j] + _c0
+
+            _c1 = 0
+            for k in range(compNo):
+                _c1 = Gij[k, i]*xi[k] + _c1
+
+            for j in range(compNo):
+                _c2 = xi[j]*Gij[i, j]
+
+                _c3 = 0
+                for k in range(compNo):
+                    _c3 = Gij[k, j]*xi[k] + _c3
+
+                _c4 = 0
+                for n in range(compNo):
+                    _c4 = xi[n]*taij[n, j]*Gij[n, j] + _c4
+
+                _c5 = taij[i, j] - (_c4/_c3)
+
+                # set
+                C0[i, j] = (_c2/_c3)*_c5
+
+            _c6 = (_c0/_c1) + np.sum(C0[i, :])
+            AcCoi[i] = exp(_c6)
+
+        # res
+        return AcCoi
+
+    def NRTL_activity_coefficient(self, xi, T, aij, gij):
+        '''
+        Non-random two-liquid model
+
+        taij: temperature dependent parameters (ta[i,i]=ta[j,j]=0) is calculated
+
+        args:
+            xi: mole fraction
+            T: temperature [K]
+            aij: non-randomness parameter (a[i,j]=a[j,i])
+            gij: interaction energy parameter (calculated later by using temperature)
+
+        return:
+            AcCo: activity coefficient
+        '''
+        # component no
+        compNo = xi.shape[0]
+
+        # temperature dependent parameter
+        taij = np.zeros((compNo, compNo))
+        for i in range(compNo):
+            for j in range(compNo):
+                if j != i:
+                    taij[i, j] = gij[i, j]/(R_CONST*T)
+
+        # dependent parameters
+        Gij = np.ones((compNo, compNo))
+        k = 0
+        for i in range(compNo):
+            for j in range(compNo):
+                if i != j:
+                    Gij[i, j] = exp(-1*aij[i, j]*taij[i, j])
+                    k += 1
+                else:
+                    Gij[i, j] = 1
 
         # activity coefficient
         AcCoi = np.zeros(compNo)

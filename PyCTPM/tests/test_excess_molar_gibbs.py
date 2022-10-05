@@ -65,17 +65,21 @@ csvFile2 = r'E:\Web App\CTPM\data\Pxy2.csv'
 # print(res0)
 
 #! Wilson equation
-res0 = pool1.Wilson_parameter_estimation(csvFile2, plot_result=False)
+# res0 = pool1.Wilson_parameter_estimation(csvFile2, plot_result=False)
+# print(res0)
+
+#! NRTL equation
+res0 = pool1.NRTL_parameter_estimation(csvFile2, plot_result=True)
 print(res0)
 
 # define activity coefficient model
-AcCoModel = {
-    'name': 'wilson',
-    'params': res0
-}
-res2 = pool1.Pxy_binary(T, model='modified-raoult',
-                        activity_coefficient_model=AcCoModel)
-print(res2)
+# AcCoModel = {
+#     'name': 'wilson',
+#     'params': res0
+# }
+# res2 = pool1.Pxy_binary(T, model='modified-raoult',
+#                         activity_coefficient_model=AcCoModel)
+# print(res2)
 
 # activity coefficient at different temperature
 # res1 = pool1.wilson_activity_coefficient()
