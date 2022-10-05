@@ -521,7 +521,7 @@ class Pool(VLEClass, Display):
         # res
         return aij
 
-    def NRTL_parameter_estimation(self, csv_file, vapor_pressure_method='polynomial', plot_result=True, bounds=[[-5, 5], [0, 5]]):
+    def NRTL_parameter_estimation(self, csv_file, vapor_pressure_method='polynomial', plot_result=True, bounds=[[-5, 5], [-5, 5]]):
         '''
         estimate NRTL parameters for a *** multi-component system ***
 

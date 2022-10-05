@@ -13,11 +13,13 @@ from PyCTPM import component, pool, is_component_available, ExcessProperties
 # comp1 = component("water")
 # comp2 = component("ethanol")
 
-# comp1 = component("di-isopropyl-ether")
-# comp2 = component("1-propanol")
+# csvFile
+comp1 = component("di-isopropyl-ether")
+comp2 = component("1-propanol")
 
-comp1 = component("ethanol")
-comp2 = component("methylbutyl-ether")
+# csvFile2
+# comp1 = component("ethanol")
+# comp2 = component("methylbutyl-ether")
 
 # ! VLE
 # define a binary system
@@ -30,7 +32,7 @@ MoFr = [0.5, 0.5]
 # system pressure [Pa]
 P1 = 101.325*1e3
 # temperature [K]
-T = 323.15
+T = 303.15
 
 #! activity coefficient
 # res1 = ExcessProperties(compList1, MoFr)
@@ -65,11 +67,13 @@ csvFile2 = r'E:\Web App\CTPM\data\Pxy2.csv'
 # print(res0)
 
 #! Wilson equation
-# res0 = pool1.Wilson_parameter_estimation(csvFile2, plot_result=False)
+# res0 = pool1.Wilson_parameter_estimation(csvFile2, plot_result=True)
 # print(res0)
 
 #! NRTL equation
-res0 = pool1.NRTL_parameter_estimation(csvFile2, plot_result=True)
+boundSet = [[0, 2], [0, 2]]
+res0 = pool1.NRTL_parameter_estimation(
+    csvFile, bounds=boundSet, plot_result=True)
 print(res0)
 
 # define activity coefficient model
