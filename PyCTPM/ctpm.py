@@ -13,6 +13,8 @@ from PyCTPM.docs import ExtCoreClass, eosCoreClass, dUtilityClass
 from PyCTPM.docs.fugacity import FugacityClass
 from PyCTPM.docs import Component
 from PyCTPM.docs import Pool
+from PyCTPM.docs import Ion
+from PyCTPM.docs.solution import Solution
 
 
 def main():
@@ -57,14 +59,47 @@ def component(id, state=''):
         raise Exception('define component object failed!, ', e)
 
 
+def ion(id):
+    '''
+    define an ion
+
+    args:
+        id: symbol with charge such as Na(+), Cl(-)
+
+    return:
+        ion object
+    '''
+    try:
+        return Ion(id)
+    except Exception as e:
+        raise Exception('define ion object failed!, ', e)
+
+
 def pool(component_list):
     '''
     define a thermodynamic system containing multiple-components (obj)
+
+    args:
+        component_list: component (solid/liquid/gas) in the system
     '''
     try:
         return Pool(component_list)
     except Exception as e:
         raise Exception('pool failed!')
+
+
+def solution(ions, solvent='water'):
+    '''
+    define a solution (solute ions and solvent)
+
+    args:
+        ions: ions participated in the solution
+        solvent: solvent symbol/name
+    '''
+    try:
+        return Solution(ions, solvent)
+    except Exception as e:
+        raise Exception('solution failed!')
 
 
 def thermo(propName, modelInput, unit="SI"):
