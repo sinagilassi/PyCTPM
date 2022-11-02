@@ -88,18 +88,21 @@ def pool(component_list):
         raise Exception('pool failed!')
 
 
-def solution(ions, solvent='water'):
+def solution(ions, molalities, solvent, solvent_molality, reaction_stoichiometric):
     '''
     define a solution (solute ions and solvent)
 
     args:
         ions: ions participated in the solution
+        molalities: 
         solvent: solvent symbol/name
+        solvent_molality:
+        reaction_stoichiometric: reaction stoichiometric
     '''
     try:
-        return Solution(ions, solvent)
+        return Solution(ions, molalities, solvent, solvent_molality, reaction_stoichiometric)
     except Exception as e:
-        raise Exception('solution failed!')
+        raise Exception('solution failed!', e)
 
 
 def thermo(propName, modelInput, unit="SI"):
