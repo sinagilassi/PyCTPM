@@ -208,3 +208,8 @@ class ElectrolyteActivityClass:
 
         except Exception as e:
             raise Exception('Pitzer parameter estimation failed!', e)
+
+    def ENRTL_activity_coefficient():
+        '''
+
+        '''

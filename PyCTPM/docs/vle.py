@@ -669,6 +669,9 @@ class VLEClass(ExcessProperties, Margules, ActivityClass):
             A0 = 0.5
         elif parameterNo == 2:
             A0 = [0.5, 0.5]
+        else:
+            A0 = 0
+            raise Exception("check A0")
 
         res = optimize.least_squares(
             self.MargulesParameterObjectiveFunction, A0, args=(params,))
@@ -1023,7 +1026,7 @@ class VLEClass(ExcessProperties, Margules, ActivityClass):
         else:
             return []
 
-        #! solve nonlinear equation for alpha_ij
+        #! solve nonlinear equation for g_ij
         fun2 = self.NRTLTemperatureIndependentParametersFunction
         # initial guess
         gij0 = 0.1*np.ones(gijNo)

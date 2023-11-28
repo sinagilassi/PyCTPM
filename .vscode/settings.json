@@ -13,5 +13,6 @@
     "vaporpressure"
   ],
   "python.pythonPath": "venv\\Scripts\\python.exe",
-  "python.analysis.extraPaths": ["ctpm"]
+  "python.analysis.extraPaths": ["ctpm"],
+  "python.analysis.typeCheckingMode": "off"
 }
